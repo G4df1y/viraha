@@ -341,6 +341,13 @@ export function VirahaApp({ services }: { services?: MobileServices }) {
       companion={state.companion}
       complete={activeServices.complete}
       messages={state.messages}
+      onChangeConnection={(messages) => {
+        setState({
+          name: 'connection',
+          companion: state.companion,
+          messages,
+        });
+      }}
     />
   );
 }

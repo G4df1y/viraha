@@ -35,6 +35,7 @@ describe('ChatScreen', () => {
         companion={companion}
         complete={complete}
         messages={[]}
+        onChangeConnection={jest.fn()}
       />,
     );
     await fireEvent.changeText(
@@ -71,6 +72,7 @@ describe('ChatScreen', () => {
         companion={companion}
         complete={complete}
         messages={[]}
+        onChangeConnection={jest.fn()}
       />,
     );
     const input = screen.getByPlaceholderText('和 Arete 说点什么…');
@@ -109,6 +111,7 @@ describe('ChatScreen', () => {
         companion={companion}
         complete={complete}
         messages={[]}
+        onChangeConnection={jest.fn()}
       />,
     );
     await fireEvent.changeText(
@@ -142,6 +145,7 @@ describe('ChatScreen', () => {
         companion={companion}
         complete={complete}
         messages={[]}
+        onChangeConnection={jest.fn()}
       />,
     );
     const input = screen.getByPlaceholderText('和 Arete 说点什么…');
@@ -174,6 +178,7 @@ describe('ChatScreen', () => {
             createdAt: '2026-07-12T00:00:00.000Z',
           },
         ]}
+        onChangeConnection={jest.fn()}
       />,
     );
     const list = screen.getByTestId('chat-message-list');

@@ -2,6 +2,25 @@ import type { ChatMessage } from '@viraha/companion-core';
 
 export type Fetcher = typeof fetch;
 
+export class ModelRequestError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ModelRequestError';
+    this.status = status;
+  }
+}
+
+export function isAuthenticationError(
+  error: unknown,
+): error is ModelRequestError {
+  return (
+    error instanceof ModelRequestError &&
+    (error.status === 401 || error.status === 403)
+  );
+}
+
 interface CompletionPayload {
   choices?: Array<{ message?: { content?: string } }>;
   error?: { message?: string };
@@ -57,7 +76,8 @@ export class OpenAICompatibleGateway {
       const rawErrorMessage = payload?.error?.message;
       const errorMessage =
         typeof rawErrorMessage === 'string' ? rawErrorMessage.trim() : '';
-      throw new Error(
+      throw new ModelRequestError(
+        response.status,
         errorMessage || `Model request failed (${response.status})`,
       );
     }

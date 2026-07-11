@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { CompanionProfile } from '@viraha/companion-core';
 
+import { isAuthenticationError } from '../model/openai-compatible';
 import type { StoredMessage } from '../storage/repository';
 
 interface ChatScreenProps {
@@ -21,6 +22,7 @@ interface ChatScreenProps {
   messages: StoredMessage[];
   addMessage: (message: StoredMessage) => Promise<void>;
   complete: (content: string, history: StoredMessage[]) => Promise<string>;
+  onChangeConnection: (messages: StoredMessage[]) => void;
 }
 
 interface PendingTurn {
@@ -52,13 +54,24 @@ export function ChatScreen({
   companion,
   complete,
   messages: initialMessages,
+  onChangeConnection,
 }: ChatScreenProps) {
+  const lastInitialMessage = initialMessages.at(-1);
+  const recoveredTurn =
+    lastInitialMessage?.role === 'user'
+      ? {
+          user: lastInitialMessage,
+          history: initialMessages,
+          userPersisted: true,
+        }
+      : null;
   const [messages, setMessages] = useState(initialMessages);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(recoveredTurn?.user.content ?? '');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [authenticationFailed, setAuthenticationFailed] = useState(false);
   const sendingLocked = useRef(false);
-  const pendingTurn = useRef<PendingTurn | null>(null);
+  const pendingTurn = useRef<PendingTurn | null>(recoveredTurn);
   const idSequence = useRef(0);
   const listRef = useRef<FlatList<StoredMessage> | null>(null);
   const isNearBottom = useRef(true);
@@ -123,6 +136,7 @@ export function ChatScreen({
     sendingLocked.current = true;
     setSending(true);
     setError(null);
+    setAuthenticationFailed(false);
 
     let turn = pendingTurn.current;
     if (!turn || turn.user.content !== content) {
@@ -134,8 +148,13 @@ export function ChatScreen({
     }
 
     void runTurn(turn)
-      .catch(() => {
-        setError('发送失败，请重试');
+      .catch((sendError: unknown) => {
+        if (isAuthenticationError(sendError)) {
+          setAuthenticationFailed(true);
+          setError('API Key 无效或已失效，请更新后重试。');
+        } else {
+          setError('发送失败，请重试');
+        }
       })
       .finally(() => {
         sendingLocked.current = false;
@@ -184,6 +203,16 @@ export function ChatScreen({
           <Text accessibilityLiveRegion="polite" style={styles.error}>
             {error}
           </Text>
+        )}
+        {authenticationFailed && (
+          <Pressable
+            accessibilityLabel="更新 API Key"
+            accessibilityRole="button"
+            onPress={() => onChangeConnection(messages)}
+            style={styles.changeConnectionButton}
+          >
+            <Text style={styles.changeConnectionText}>更新 API Key</Text>
+          </Pressable>
         )}
         <View style={styles.composer}>
           <TextInput
@@ -245,6 +274,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingHorizontal: 16,
     paddingTop: 8,
+  },
+  changeConnectionButton: {
+    alignSelf: 'flex-start',
+    marginHorizontal: 16,
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  changeConnectionText: {
+    color: '#245E45',
+    fontSize: 15,
+    fontWeight: '700',
   },
   composer: {
     alignItems: 'flex-end',

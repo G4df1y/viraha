@@ -1,5 +1,9 @@
 import { ProviderCredentialStore } from '../src/model/credential-store';
-import { OpenAICompatibleGateway } from '../src/model/openai-compatible';
+import {
+  ModelRequestError,
+  OpenAICompatibleGateway,
+  isAuthenticationError,
+} from '../src/model/openai-compatible';
 
 describe('mobile model adapters', () => {
   it('stores API keys in secure storage', async () => {
@@ -113,6 +117,38 @@ describe('mobile model adapters', () => {
       }),
     ).rejects.toThrow('Invalid API key');
   });
+
+  it.each([401, 403])(
+    'exposes authentication status %s as a recoverable model error',
+    async (status) => {
+      const fetcher = jest.fn(async () =>
+        new Response(JSON.stringify({ error: { message: 'Invalid API key' } }), {
+          status,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+      const gateway = new OpenAICompatibleGateway(fetcher);
+
+      const request = gateway.complete({
+        baseUrl: 'https://api.deepseek.com',
+        model: 'deepseek-chat',
+        apiKey: 'revoked',
+        messages: [{ role: 'user', content: '你好' }],
+      });
+
+      await expect(request).rejects.toEqual(
+        expect.objectContaining({
+          name: 'ModelRequestError',
+          message: 'Invalid API key',
+          status,
+        }),
+      );
+      await request.catch((error: unknown) => {
+        expect(error).toBeInstanceOf(ModelRequestError);
+        expect(isAuthenticationError(error)).toBe(true);
+      });
+    },
+  );
 
   it.each(['<html>Unauthorized</html>', ''])(
     'uses a stable error for a non-JSON failure response',

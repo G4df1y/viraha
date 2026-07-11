@@ -7,6 +7,8 @@ import {
 
 import { VirahaApp, type MobileServices } from '../src/app/VirahaApp';
 import type { CompanionProfile } from '@viraha/companion-core';
+import { ModelRequestError } from '../src/model/openai-compatible';
+import type { StoredMessage } from '../src/storage/repository';
 
 const companion: CompanionProfile = {
   id: 'c1',
@@ -102,5 +104,79 @@ describe('VirahaApp flow', () => {
       expect(screen.getByText('上次聊到轻量训练。')).toBeOnTheScreen();
     });
     expect(saveConnection).toHaveBeenCalledTimes(1);
+  });
+
+  it('updates a revoked key and resumes the persisted user turn', async () => {
+    const addMessage = jest.fn(async (_message: StoredMessage) => undefined);
+    const complete = jest
+      .fn<Promise<string>, [string, Parameters<MobileServices['complete']>[1]]>()
+      .mockRejectedValueOnce(new ModelRequestError(401, 'Invalid API key'))
+      .mockResolvedValueOnce('今天从轻量训练开始。');
+    const saveConnection = jest.fn(async () => undefined);
+
+    await render(
+      <VirahaApp
+        services={services({
+          boot: async () => ({
+            companion,
+            connection: {
+              kind: 'byok',
+              baseUrl: 'https://api.deepseek.com',
+              model: 'deepseek-chat',
+              credentialId: 'primary',
+            },
+            apiKey: 'revoked',
+            messages: [],
+          }),
+          addMessage,
+          complete,
+          saveConnection,
+        })}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('和 Arete 说点什么…')).toBeOnTheScreen();
+    });
+    await fireEvent.changeText(
+      screen.getByPlaceholderText('和 Arete 说点什么…'),
+      '今天练什么？',
+    );
+    await fireEvent.press(screen.getByRole('button', { name: '发送' }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('API Key 无效或已失效，请更新后重试。'),
+      ).toBeOnTheScreen();
+      expect(
+        screen.getByRole('button', { name: '更新 API Key' }),
+      ).toBeOnTheScreen();
+    });
+    await fireEvent.press(
+      screen.getByRole('button', { name: '更新 API Key' }),
+    );
+    await waitFor(() => {
+      expect(screen.getByText('连接模型')).toBeOnTheScreen();
+    });
+    await fireEvent.changeText(screen.getByPlaceholderText('API Key'), 'new-key');
+    await fireEvent.press(screen.getByRole('button', { name: '保存并继续' }));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('今天练什么？')).toBeOnTheScreen();
+    });
+    await fireEvent.press(screen.getByRole('button', { name: '发送' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('今天从轻量训练开始。')).toBeOnTheScreen();
+    });
+    expect(saveConnection).toHaveBeenCalledWith(
+      expect.objectContaining({ apiKey: 'new-key' }),
+    );
+    expect(complete).toHaveBeenCalledTimes(2);
+    expect(addMessage).toHaveBeenCalledTimes(2);
+    expect(addMessage.mock.calls.map(([message]) => message.role)).toEqual([
+      'user',
+      'assistant',
+    ]);
   });
 });
