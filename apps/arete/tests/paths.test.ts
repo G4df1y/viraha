@@ -1,3 +1,5 @@
+import path from "node:path"
+
 import { describe, expect, it } from "vitest"
 
 import { resolveAretePaths } from "../src/config/paths.js"
@@ -23,6 +25,27 @@ describe("resolveAretePaths", () => {
 
     expect(paths.rootDir).toBe("/srv/arete")
     expect(paths.dataDir).toBe("/srv/arete/data")
+  })
+
+  it("trims and resolves a relative ARETE_HOME with the simulated platform", () => {
+    const paths = resolveAretePaths({
+      platform: "linux",
+      homeDir: "/home/ada",
+      env: { ARETE_HOME: "  relative/arete  " },
+    })
+
+    expect(paths.rootDir).toBe(path.posix.resolve("relative/arete"))
+    expect(path.posix.isAbsolute(paths.rootDir)).toBe(true)
+  })
+
+  it("ignores a whitespace-only ARETE_HOME", () => {
+    const paths = resolveAretePaths({
+      platform: "linux",
+      homeDir: "/home/ada",
+      env: { ARETE_HOME: "   " },
+    })
+
+    expect(paths.rootDir).toBe("/home/ada/.local/share/viraha/arete")
   })
 
   it("uses XDG_DATA_HOME for the Linux application root", () => {

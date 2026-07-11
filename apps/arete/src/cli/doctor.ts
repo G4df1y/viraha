@@ -28,7 +28,7 @@ export interface RunDoctorOptions {
 
 export async function runDoctor(options: RunDoctorOptions = {}): Promise<DoctorReport> {
   const nodeVersion = options.nodeVersion ?? process.versions.node
-  const port = options.port ?? 3000
+  const port = options.port ?? Number.parseInt(process.env.PORT || "3000", 10)
   const paths = options.paths ?? resolveAretePaths()
   const ensureWritable = options.ensureWritable ?? defaultEnsureWritable
   const isPortAvailable = options.isPortAvailable ?? defaultIsPortAvailable

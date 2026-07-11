@@ -57,4 +57,30 @@ describe("runDoctor", () => {
     expect(report.ok).toBe(false)
     expect(report.checks.at(-1)).toMatchObject({ id: "port", ok: false })
   })
+
+  it("uses PORT from the environment when no port option is provided", async () => {
+    const previousPort = process.env.PORT
+    let checkedPort: number | undefined
+    process.env.PORT = "4312"
+
+    try {
+      await runDoctor({
+        nodeVersion: "22.18.0",
+        paths,
+        ensureWritable: async () => true,
+        isPortAvailable: async port => {
+          checkedPort = port
+          return true
+        },
+      })
+    } finally {
+      if (previousPort === undefined) {
+        delete process.env.PORT
+      } else {
+        process.env.PORT = previousPort
+      }
+    }
+
+    expect(checkedPort).toBe(4312)
+  })
 })

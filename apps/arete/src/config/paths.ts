@@ -21,11 +21,11 @@ export function resolveAretePaths(options: ResolveAretePathsOptions = {}): Arete
   const homeDir = options.homeDir ?? homedir()
   const env = options.env ?? process.env
   const pathApi = platform === "win32" ? path.win32 : path.posix
-  const areteHome = env.ARETE_HOME
+  const areteHome = env.ARETE_HOME?.trim()
 
   let rootDir: string
-  if (areteHome?.trim()) {
-    rootDir = pathApi.normalize(areteHome)
+  if (areteHome) {
+    rootDir = pathApi.resolve(areteHome)
   } else if (platform === "win32") {
     rootDir = pathApi.join(env.LOCALAPPDATA || homeDir, "Viraha", "Arete")
   } else if (platform === "darwin") {
