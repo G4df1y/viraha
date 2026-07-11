@@ -27,11 +27,17 @@ export function resolveAretePaths(options: ResolveAretePathsOptions = {}): Arete
   if (areteHome) {
     rootDir = pathApi.resolve(areteHome)
   } else if (platform === "win32") {
-    rootDir = pathApi.join(env.LOCALAPPDATA || homeDir, "Viraha", "Arete")
+    const localAppData = env.LOCALAPPDATA?.trim()
+    const dataHome = localAppData && pathApi.isAbsolute(localAppData) ? localAppData : homeDir
+    rootDir = pathApi.join(dataHome, "Viraha", "Arete")
   } else if (platform === "darwin") {
     rootDir = pathApi.join(homeDir, "Library", "Application Support", "Viraha", "Arete")
   } else {
-    rootDir = pathApi.join(env.XDG_DATA_HOME || pathApi.join(homeDir, ".local", "share"), "viraha", "arete")
+    const xdgDataHome = env.XDG_DATA_HOME?.trim()
+    const dataHome = xdgDataHome && pathApi.isAbsolute(xdgDataHome)
+      ? xdgDataHome
+      : pathApi.join(homeDir, ".local", "share")
+    rootDir = pathApi.join(dataHome, "viraha", "arete")
   }
 
   const dataDir = pathApi.join(rootDir, "data")

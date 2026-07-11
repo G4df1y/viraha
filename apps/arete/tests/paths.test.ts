@@ -16,6 +16,19 @@ describe("resolveAretePaths", () => {
     expect(paths.dbPath).toBe("C:\\Users\\Ada\\AppData\\Local\\Viraha\\Arete\\data\\arete.db")
   })
 
+  it.each(["   ", "AppData\\Local"])(
+    "falls back to the Windows home directory for invalid LOCALAPPDATA %j",
+    localAppData => {
+      const paths = resolveAretePaths({
+        platform: "win32",
+        homeDir: "C:\\Users\\Ada",
+        env: { LOCALAPPDATA: localAppData },
+      })
+
+      expect(paths.rootDir).toBe("C:\\Users\\Ada\\Viraha\\Arete")
+    },
+  )
+
   it("prefers ARETE_HOME over the platform default", () => {
     const paths = resolveAretePaths({
       platform: "linux",
@@ -57,4 +70,17 @@ describe("resolveAretePaths", () => {
 
     expect(paths.rootDir).toBe("/var/lib/ada/viraha/arete")
   })
+
+  it.each(["   ", "var/lib/ada"])(
+    "falls back to the Linux home directory for invalid XDG_DATA_HOME %j",
+    xdgDataHome => {
+      const paths = resolveAretePaths({
+        platform: "linux",
+        homeDir: "/home/ada",
+        env: { XDG_DATA_HOME: xdgDataHome },
+      })
+
+      expect(paths.rootDir).toBe("/home/ada/.local/share/viraha/arete")
+    },
+  )
 })
