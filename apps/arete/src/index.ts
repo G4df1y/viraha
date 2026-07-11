@@ -33,8 +33,10 @@ import {
 } from "./skills/handlers.js"
 import { createAreteWebServer } from "./web.js"
 import { runScheduledPresenceChecks } from "./presence-scheduler.js"
+import { resolveAretePaths } from "./config/paths.js"
 
-const DATA_DIR = path.join(process.cwd(), "data")
+const ARETE_PATHS = resolveAretePaths()
+const DATA_DIR = ARETE_PATHS.dataDir
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
 
 function createLlm(): { model: string; provider: ProviderRegistry; llm: LLMProvider } {
@@ -69,7 +71,7 @@ function hasRealKey(value: string | undefined): value is string {
 }
 
 async function main() {
-  const dbPath = path.join(DATA_DIR, "arete.db")
+  const dbPath = ARETE_PATHS.dbPath
   await migrate(dbPath)
   initDb(dbPath)
 
