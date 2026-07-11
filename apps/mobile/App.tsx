@@ -1,37 +1,20 @@
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+
+import { OnboardingFlow } from './src/onboarding/OnboardingFlow';
 
 export function App() {
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.app}>
       <StatusBar style="dark" />
-      <View style={styles.content}>
-        <Text style={styles.title}>Viraha</Text>
-        <Text style={styles.subtitle}>你的 Companion，从这里开始。</Text>
-      </View>
-    </SafeAreaView>
+      <OnboardingFlow onComplete={() => undefined} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  app: {
     flex: 1,
     backgroundColor: '#F7F8F7',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 28,
-  },
-  title: {
-    color: '#111827',
-    fontSize: 42,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 12,
-    color: '#4b5563',
-    fontSize: 17,
-    lineHeight: 26,
   },
 });
