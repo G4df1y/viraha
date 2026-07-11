@@ -7,6 +7,29 @@ interface CompletionPayload {
   error?: { message?: string };
 }
 
+function parsePayload(body: string): CompletionPayload | undefined {
+  if (!body.trim()) {
+    return undefined;
+  }
+
+  try {
+    const payload: unknown = JSON.parse(body);
+    return payload && typeof payload === 'object'
+      ? (payload as CompletionPayload)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function chatCompletionsUrl(baseUrl: string): string {
+  const endpoint = new URL(baseUrl);
+  endpoint.pathname = `${endpoint.pathname.replace(/\/+$/, '')}/chat/completions`;
+  endpoint.search = '';
+  endpoint.hash = '';
+  return endpoint.toString();
+}
+
 export class OpenAICompatibleGateway {
   constructor(private readonly fetcher: Fetcher = fetch) {}
 
@@ -16,7 +39,7 @@ export class OpenAICompatibleGateway {
     apiKey: string;
     messages: ChatMessage[];
   }): Promise<string> {
-    const response = await this.fetcher(`${input.baseUrl}/chat/completions`, {
+    const response = await this.fetcher(chatCompletionsUrl(input.baseUrl), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -28,15 +51,23 @@ export class OpenAICompatibleGateway {
         stream: false,
       }),
     });
-    const payload = (await response.json()) as CompletionPayload;
+    const payload = parsePayload(await response.text());
 
     if (!response.ok) {
+      const rawErrorMessage = payload?.error?.message;
+      const errorMessage =
+        typeof rawErrorMessage === 'string' ? rawErrorMessage.trim() : '';
       throw new Error(
-        payload.error?.message || `Model request failed (${response.status})`,
+        errorMessage || `Model request failed (${response.status})`,
       );
     }
 
-    const content = payload.choices?.[0]?.message?.content?.trim();
+    if (!payload) {
+      throw new Error('Model returned an invalid response');
+    }
+
+    const rawContent = payload.choices?.[0]?.message?.content;
+    const content = typeof rawContent === 'string' ? rawContent.trim() : '';
     if (!content) {
       throw new Error('Model returned an empty response');
     }

@@ -6,18 +6,30 @@ export interface SecretStorage {
   deleteItemAsync(key: string): Promise<void>;
 }
 
+function providerKey(id: string): string {
+  const credentialId = id.trim();
+  if (!credentialId) {
+    throw new Error('Credential id is required');
+  }
+  if (!/^[A-Za-z0-9._-]+$/.test(credentialId)) {
+    throw new Error('Credential id contains invalid characters');
+  }
+
+  return `provider.${credentialId}`;
+}
+
 export class ProviderCredentialStore {
   constructor(private readonly storage: SecretStorage = SecureStore) {}
 
-  save(id: string, apiKey: string): Promise<void> {
-    return this.storage.setItemAsync(`provider:${id}`, apiKey);
+  async save(id: string, apiKey: string): Promise<void> {
+    await this.storage.setItemAsync(providerKey(id), apiKey);
   }
 
-  read(id: string): Promise<string | null> {
-    return this.storage.getItemAsync(`provider:${id}`);
+  async read(id: string): Promise<string | null> {
+    return this.storage.getItemAsync(providerKey(id));
   }
 
-  remove(id: string): Promise<void> {
-    return this.storage.deleteItemAsync(`provider:${id}`);
+  async remove(id: string): Promise<void> {
+    await this.storage.deleteItemAsync(providerKey(id));
   }
 }
