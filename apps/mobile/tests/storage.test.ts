@@ -172,4 +172,20 @@ describe('mobile storage', () => {
       'primary-key',
     ]);
   });
+
+  it('creates the primary session idempotently', async () => {
+    const runAsync = jest.fn(async () => ({ changes: 1, lastInsertRowId: 0 }));
+    const repository = new MobileRepository(fakeDatabase({ runAsync }));
+
+    await repository.createSession({
+      id: 'primary',
+      companionId: 'companion-1',
+      createdAt: '2026-07-12T00:00:00.000Z',
+    });
+
+    expect(runAsync).toHaveBeenCalledWith(
+      expect.stringMatching(/INSERT OR IGNORE INTO sessions/),
+      ['primary', 'companion-1', '2026-07-12T00:00:00.000Z'],
+    );
+  });
 });

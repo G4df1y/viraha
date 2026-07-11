@@ -143,7 +143,7 @@ export class MobileRepository {
 
   async createSession(session: StoredSession): Promise<void> {
     await this.database.runAsync(
-      'INSERT INTO sessions (id, companion_id, created_at) VALUES (?, ?, ?)',
+      'INSERT OR IGNORE INTO sessions (id, companion_id, created_at) VALUES (?, ?, ?)',
       [session.id, session.companionId, session.createdAt],
     );
   }

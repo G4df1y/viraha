@@ -5,7 +5,7 @@ import {
   SafeAreaProvider,
 } from 'react-native-safe-area-context';
 
-import { OnboardingFlow } from './src/onboarding/OnboardingFlow';
+import { VirahaApp } from './src/app/VirahaApp';
 
 const ZERO_SAFE_AREA_METRICS = {
   frame: { height: 0, width: 0, x: 0, y: 0 },
@@ -19,7 +19,7 @@ export function App() {
     >
       <View style={styles.app}>
         <StatusBar style="dark" />
-        <OnboardingFlow onComplete={() => undefined} />
+        <VirahaApp />
       </View>
     </SafeAreaProvider>
   );
