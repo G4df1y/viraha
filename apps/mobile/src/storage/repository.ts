@@ -113,7 +113,7 @@ export class MobileRepository {
   async getCompanion(): Promise<CompanionProfile | null> {
     const row = await this.database.getFirstAsync<CompanionRow>(
       `SELECT * FROM companions
-      ORDER BY created_at
+      ORDER BY created_at ASC, rowid ASC
       LIMIT 1`,
       [],
     );
@@ -166,7 +166,7 @@ export class MobileRepository {
     const rows = await this.database.getAllAsync<MessageRow>(
       `SELECT * FROM messages
       WHERE session_id = ?
-      ORDER BY created_at ASC`,
+      ORDER BY created_at ASC, rowid ASC`,
       [sessionId],
     );
     return rows.map(mapMessage);

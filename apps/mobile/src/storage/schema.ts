@@ -2,6 +2,7 @@ import type { SqlDatabase } from './database';
 
 const MOBILE_SCHEMA = `
 PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS companions (
   id TEXT PRIMARY KEY NOT NULL,
@@ -24,17 +25,20 @@ CREATE TABLE IF NOT EXISTS model_connections (
 
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY NOT NULL,
-  companion_id TEXT NOT NULL,
+  companion_id TEXT NOT NULL REFERENCES companions(id) ON DELETE CASCADE,
   created_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY NOT NULL,
-  session_id TEXT NOT NULL,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   role TEXT NOT NULL,
   content TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS sessions_companion
+ON sessions (companion_id);
 
 CREATE INDEX IF NOT EXISTS messages_session_created
 ON messages (session_id, created_at);

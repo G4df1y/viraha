@@ -22,10 +22,20 @@ describe('mobile storage', () => {
 
     const sql = execAsync.mock.calls.map(([statement]) => statement).join('\n');
     expect(sql).toContain('PRAGMA journal_mode = WAL');
+    expect(sql).toContain('PRAGMA foreign_keys = ON');
     expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS companions/);
     expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS model_connections/);
     expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS sessions/);
     expect(sql).toMatch(/CREATE TABLE IF NOT EXISTS messages/);
+    expect(sql).toMatch(
+      /companion_id TEXT NOT NULL REFERENCES companions\s*\(id\)\s*ON DELETE CASCADE/,
+    );
+    expect(sql).toMatch(
+      /session_id TEXT NOT NULL REFERENCES sessions\s*\(id\)\s*ON DELETE CASCADE/,
+    );
+    expect(sql).toMatch(
+      /CREATE INDEX IF NOT EXISTS sessions_companion\s+ON sessions\s*\(companion_id\)/,
+    );
     expect(sql).toMatch(
       /CREATE INDEX IF NOT EXISTS messages_session_created\s+ON messages\s*\(session_id, created_at\)/,
     );
@@ -70,7 +80,9 @@ describe('mobile storage', () => {
       },
     ]);
     expect(getAllAsync).toHaveBeenCalledWith(
-      expect.stringMatching(/WHERE session_id = \?\s+ORDER BY created_at ASC/),
+      expect.stringMatching(
+        /WHERE session_id = \?\s+ORDER BY created_at ASC, rowid ASC/,
+      ),
       ['session-1'],
     );
   });
@@ -127,7 +139,7 @@ describe('mobile storage', () => {
     expect(getFirstAsync).toHaveBeenNthCalledWith(
       1,
       expect.stringMatching(
-        /SELECT \* FROM companions\s+ORDER BY created_at\s+LIMIT 1/,
+        /SELECT \* FROM companions\s+ORDER BY created_at ASC, rowid ASC\s+LIMIT 1/,
       ),
       [],
     );
