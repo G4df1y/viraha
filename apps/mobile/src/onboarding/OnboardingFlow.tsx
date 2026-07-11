@@ -1,11 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   BUILTIN_TEMPLATES,
   createCompanion,
@@ -19,7 +22,7 @@ import {
 type Step = 'age' | 'child' | 'category' | 'user' | 'name';
 
 interface OnboardingFlowProps {
-  onComplete: (companion: CompanionProfile) => void;
+  onComplete: (companion: CompanionProfile) => void | Promise<void>;
 }
 
 const CATEGORY_LABELS: Record<CompanionCategory, string> = {
@@ -49,6 +52,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [companionName, setCompanionName] = useState(
     DEFAULT_TEMPLATE.defaultName,
   );
+  const [submitting, setSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const completionLocked = useRef(false);
 
   const availableTemplates = useMemo(
     () =>
@@ -74,94 +80,134 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }
 
   function completeOnboarding() {
-    onComplete(
-      createCompanion({
-        template,
-        companionName,
-        userDisplayName,
-        userAgeBand: ageBand,
-        id: `companion-${Date.now()}`,
-        now: new Date().toISOString(),
-      }),
-    );
+    if (completionLocked.current) {
+      return;
+    }
+
+    completionLocked.current = true;
+    setSubmitting(true);
+    setSubmissionError(null);
+
+    try {
+      void Promise.resolve(
+        onComplete(
+          createCompanion({
+            template,
+            companionName,
+            userDisplayName,
+            userAgeBand: ageBand,
+            id: `companion-${Date.now()}`,
+            now: new Date().toISOString(),
+          }),
+        ),
+      ).catch(() => {
+        completionLocked.current = false;
+        setSubmitting(false);
+        setSubmissionError('创建失败，请重试');
+      });
+    } catch {
+      completionLocked.current = false;
+      setSubmitting(false);
+      setSubmissionError('创建失败，请重试');
+    }
   }
 
   return (
-    <View style={styles.container}>
-      {step === 'age' && (
-        <>
-          <Text style={styles.title}>请选择年龄范围</Text>
-          <Choice label="未满 14 岁" onPress={() => chooseAge('under14')} />
-          <Choice label="14–17 岁" onPress={() => chooseAge('teen')} />
-          <Choice label="18 岁及以上" onPress={() => chooseAge('adult')} />
-        </>
-      )}
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.keyboardAvoidingView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
+          {step === 'age' && (
+            <>
+              <Text style={styles.title}>请选择年龄范围</Text>
+              <Choice label="未满 14 岁" onPress={() => chooseAge('under14')} />
+              <Choice label="14–17 岁" onPress={() => chooseAge('teen')} />
+              <Choice label="18 岁及以上" onPress={() => chooseAge('adult')} />
+            </>
+          )}
 
-      {step === 'child' && (
-        <>
-          <Text style={styles.title}>请由监护人完成设置</Text>
-          <Text style={styles.body}>
-            未满 14 岁的用户需要经过验证的监护人同意。该流程将在青少年保护阶段启用。
-          </Text>
-          <PrimaryButton label="返回" onPress={() => setStep('age')} />
-        </>
-      )}
+          {step === 'child' && (
+            <>
+              <Text style={styles.title}>请由监护人完成设置</Text>
+              <Text style={styles.body}>
+                未满 14 岁的用户需要经过验证的监护人同意。该流程将在青少年保护阶段启用。
+              </Text>
+              <PrimaryButton label="返回" onPress={() => setStep('age')} />
+            </>
+          )}
 
-      {step === 'category' && (
-        <>
-          <Text style={styles.title}>你希望 TA 是谁？</Text>
-          {availableTemplates.map((candidate) => (
-            <Choice
-              key={candidate.id}
-              label={CATEGORY_LABELS[candidate.category]}
-              onPress={() => chooseTemplate(candidate)}
-            />
-          ))}
-        </>
-      )}
+          {step === 'category' && (
+            <>
+              <Text style={styles.title}>你希望 TA 是谁？</Text>
+              {availableTemplates.map((candidate) => (
+                <Choice
+                  key={candidate.id}
+                  label={CATEGORY_LABELS[candidate.category]}
+                  onPress={() => chooseTemplate(candidate)}
+                />
+              ))}
+            </>
+          )}
 
-      {step === 'user' && (
-        <>
-          <Text style={styles.title}>TA 应该怎么称呼你？</Text>
-          <TextInput
-            autoFocus
-            onChangeText={setUserDisplayName}
-            placeholder="例如：神龙"
-            style={styles.input}
-            value={userDisplayName}
-          />
-          <PrimaryButton
-            disabled={!userDisplayName.trim()}
-            label="继续"
-            onPress={() => setStep('name')}
-          />
-        </>
-      )}
+          {step === 'user' && (
+            <>
+              <Text style={styles.title}>TA 应该怎么称呼你？</Text>
+              <TextInput
+                autoFocus
+                onChangeText={setUserDisplayName}
+                placeholder="例如：神龙"
+                style={styles.input}
+                value={userDisplayName}
+              />
+              <PrimaryButton
+                disabled={!userDisplayName.trim()}
+                label="继续"
+                onPress={() => setStep('name')}
+              />
+            </>
+          )}
 
-      {step === 'name' && (
-        <>
-          <Text style={styles.title}>希望 TA 怎么称呼自己？</Text>
-          <TextInput
-            autoFocus
-            onChangeText={setCompanionName}
-            placeholder="例如：Arete"
-            style={styles.input}
-            value={companionName}
-          />
-          <PrimaryButton
-            disabled={!companionName.trim()}
-            label="开始聊天"
-            onPress={completeOnboarding}
-          />
-        </>
-      )}
-    </View>
+          {step === 'name' && (
+            <>
+              <Text style={styles.title}>希望 TA 怎么称呼自己？</Text>
+              <TextInput
+                autoFocus
+                onChangeText={setCompanionName}
+                placeholder="例如：Arete"
+                style={styles.input}
+                value={companionName}
+              />
+              {submissionError && (
+                <Text accessibilityLiveRegion="polite" style={styles.error}>
+                  {submissionError}
+                </Text>
+              )}
+              <PrimaryButton
+                disabled={!companionName.trim() || submitting}
+                label="开始聊天"
+                onPress={completeOnboarding}
+              />
+            </>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 function Choice({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={styles.choice}>
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.choice}
+    >
       <Text style={styles.choiceText}>{label}</Text>
     </Pressable>
   );
@@ -178,6 +224,9 @@ function PrimaryButton({
 }) {
   return (
     <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
       style={[styles.button, disabled && styles.buttonDisabled]}
@@ -188,11 +237,18 @@ function PrimaryButton({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  container: {
+    flexGrow: 1,
     gap: 16,
     justifyContent: 'center',
     padding: 24,
+    paddingBottom: 32,
   },
   title: {
     color: '#171A1F',
@@ -203,6 +259,10 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     fontSize: 16,
     lineHeight: 24,
+  },
+  error: {
+    color: '#B42318',
+    fontSize: 15,
   },
   choice: {
     backgroundColor: '#FFFFFF',

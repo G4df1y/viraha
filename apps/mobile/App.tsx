@@ -1,14 +1,27 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
+import {
+  initialWindowMetrics,
+  SafeAreaProvider,
+} from 'react-native-safe-area-context';
 
 import { OnboardingFlow } from './src/onboarding/OnboardingFlow';
 
+const ZERO_SAFE_AREA_METRICS = {
+  frame: { height: 0, width: 0, x: 0, y: 0 },
+  insets: { bottom: 0, left: 0, right: 0, top: 0 },
+};
+
 export function App() {
   return (
-    <View style={styles.app}>
-      <StatusBar style="dark" />
-      <OnboardingFlow onComplete={() => undefined} />
-    </View>
+    <SafeAreaProvider
+      initialMetrics={initialWindowMetrics ?? ZERO_SAFE_AREA_METRICS}
+    >
+      <View style={styles.app}>
+        <StatusBar style="dark" />
+        <OnboardingFlow onComplete={() => undefined} />
+      </View>
+    </SafeAreaProvider>
   );
 }
 
