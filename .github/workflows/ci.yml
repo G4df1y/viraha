@@ -47,7 +47,7 @@ jobs:
       - name: Reject Node.js imports in companion core
         shell: bash
         run: |
-          if grep -R -n --include='*.ts' "node:" packages/companion-core/src; then
+          if grep -R -n 'node:' packages/companion-core/src; then
             echo "Found a Node.js import in packages/companion-core/src; companion core must remain React Native compatible"
             exit 1
           fi
