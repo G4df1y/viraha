@@ -8,6 +8,10 @@
   "scripts": {
     "dev": "pnpm --filter @viraha/arete dev",
     "web": "pnpm dev",
+    "mobile": "pnpm --filter @viraha/mobile start",
+    "mobile:test": "pnpm --filter @viraha/mobile test",
+    "mobile:check": "pnpm --filter @viraha/mobile typecheck && pnpm --filter @viraha/mobile test",
+    "mobile:export": "pnpm --filter @viraha/mobile export:android",
     "cli": "pnpm --filter @viraha/arete exec tsx src/cli.ts",
     "setup": "pnpm --filter @viraha/arete exec tsx scripts/setup.ts",
     "build": "pnpm -r build",

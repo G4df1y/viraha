@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Viraha",
+    "slug": "viraha",
+    "scheme": "viraha",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 28
+          }
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.viraha.mobile"
+    },
+    "ios": {
+      "bundleIdentifier": "com.viraha.mobile",
+      "supportsTablet": true
+    }
+  }
+}
