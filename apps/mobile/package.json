@@ -11,6 +11,7 @@
     "export:android": "expo export --platform android --output-dir dist/android"
   },
   "dependencies": {
+    "@viraha/companion-core": "workspace:*",
     "expo": "~57.0.4",
     "expo-build-properties": "~57.0.3",
     "expo-status-bar": "~57.0.0",
