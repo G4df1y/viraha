@@ -29,7 +29,7 @@ Keep every item unchecked until the named environment has actually passed it. Re
 
 ## iOS (Deferred)
 
-- [ ] EAS development build installs through TestFlight.
+- [ ] EAS production build installs through TestFlight.
 - [ ] On a physical iPhone, confirm the API key is stored in Keychain and absent from SQLite files and logs.
 - [ ] On a physical iPhone, verify SQLite conversation persistence across force-close and restart.
 - [ ] On a physical iPhone, verify keyboard avoidance, dismissal, draft retention, and submit behavior.
