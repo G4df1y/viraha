@@ -1,6 +1,10 @@
 {
   "name": "viraha",
   "private": true,
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "dev": "pnpm --filter @viraha/arete dev",
     "web": "pnpm dev",
