@@ -8,6 +8,8 @@ import {
   Text,
   TextInput,
   View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { CompanionProfile } from '@viraha/companion-core';
@@ -29,6 +31,21 @@ interface PendingTurn {
 }
 
 const SESSION_ID = 'primary';
+const NEAR_LIST_END_THRESHOLD = 80;
+
+export function isNearListEnd({
+  contentHeight,
+  contentOffsetY,
+  layoutHeight,
+}: {
+  contentHeight: number;
+  contentOffsetY: number;
+  layoutHeight: number;
+}): boolean {
+  return (
+    contentHeight - layoutHeight - contentOffsetY <= NEAR_LIST_END_THRESHOLD
+  );
+}
 
 export function ChatScreen({
   addMessage,
@@ -43,6 +60,9 @@ export function ChatScreen({
   const sendingLocked = useRef(false);
   const pendingTurn = useRef<PendingTurn | null>(null);
   const idSequence = useRef(0);
+  const listRef = useRef<FlatList<StoredMessage> | null>(null);
+  const isNearBottom = useRef(true);
+  const didInitialScroll = useRef(false);
 
   function createMessage(
     role: StoredMessage['role'],
@@ -73,7 +93,25 @@ export function ChatScreen({
     await addMessage(assistant);
     setMessages((current) => [...current, assistant]);
     pendingTurn.current = null;
-    setDraft('');
+    setDraft((current) =>
+      current.trim() === turn.user.content ? '' : current,
+    );
+  }
+
+  function handleListScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    isNearBottom.current = isNearListEnd({
+      contentHeight: contentSize.height,
+      contentOffsetY: contentOffset.y,
+      layoutHeight: layoutMeasurement.height,
+    });
+  }
+
+  function followListContent() {
+    if (!didInitialScroll.current || isNearBottom.current) {
+      listRef.current?.scrollToEnd({ animated: didInitialScroll.current });
+      didInitialScroll.current = true;
+    }
   }
 
   function sendMessage() {
@@ -124,6 +162,9 @@ export function ChatScreen({
           data={messages}
           keyExtractor={(message) => message.id}
           keyboardShouldPersistTaps="handled"
+          onContentSizeChange={followListContent}
+          onScroll={handleListScroll}
+          ref={listRef}
           renderItem={({ item }) => (
             <View
               style={[
@@ -136,6 +177,8 @@ export function ChatScreen({
               <Text style={styles.messageText}>{item.content}</Text>
             </View>
           )}
+          scrollEventThrottle={16}
+          testID="chat-message-list"
         />
         {error && (
           <Text accessibilityLiveRegion="polite" style={styles.error}>
