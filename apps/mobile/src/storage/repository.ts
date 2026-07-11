@@ -110,10 +110,12 @@ export class MobileRepository {
     );
   }
 
-  async getCompanion(id: string): Promise<CompanionProfile | null> {
+  async getCompanion(): Promise<CompanionProfile | null> {
     const row = await this.database.getFirstAsync<CompanionRow>(
-      'SELECT * FROM companions WHERE id = ?',
-      [id],
+      `SELECT * FROM companions
+      ORDER BY created_at
+      LIMIT 1`,
+      [],
     );
     return row ? mapCompanion(row) : null;
   }

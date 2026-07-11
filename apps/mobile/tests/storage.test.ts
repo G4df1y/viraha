@@ -123,7 +123,14 @@ describe('mobile storage', () => {
     );
 
     await repository.saveCompanion(companion);
-    await expect(repository.getCompanion(companion.id)).resolves.toEqual(companion);
+    await expect(repository.getCompanion()).resolves.toEqual(companion);
+    expect(getFirstAsync).toHaveBeenNthCalledWith(
+      1,
+      expect.stringMatching(
+        /SELECT \* FROM companions\s+ORDER BY created_at\s+LIMIT 1/,
+      ),
+      [],
+    );
     await repository.saveConnection('primary', connection);
     await expect(repository.getConnection()).resolves.toEqual(connection);
     await repository.createSession({
