@@ -8,7 +8,7 @@
     "cli": "tsx src/cli.ts",
     "setup": "tsx scripts/setup.ts",
     "build": "tsc",
-    "test": "vitest run --passWithNoTests || true",
+    "test": "vitest run --passWithNoTests",
     "eval:smoke": "tsx scripts/run-evals.ts smoke",
     "eval:crisis": "tsx scripts/run-evals.ts crisis",
     "eval:all": "tsx scripts/run-evals.ts smoke && tsx scripts/run-evals.ts crisis"

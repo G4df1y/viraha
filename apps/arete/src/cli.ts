@@ -331,7 +331,7 @@ async function main() {
       if (stdinClosed) {
         process.exit(0)
       }
-      if (!rl.closed) rl.prompt()
+      rl.prompt()
     }
   })
 
