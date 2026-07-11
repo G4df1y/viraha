@@ -9,11 +9,14 @@ export type CompanionPermission =
   | "channel.send";
 
 export interface CompanionPackManifest extends CompanionTemplate {
-  version: string;
-  author: string;
-  minimumAge: number;
-  permissions: CompanionPermission[];
-  category: CompanionCategory;
+  readonly id: string;
+  readonly version: string;
+  readonly author: string;
+  readonly category: CompanionCategory;
+  readonly defaultName: string;
+  readonly description: string;
+  readonly minimumAge: number;
+  readonly permissions: readonly CompanionPermission[];
 }
 
 export type PackAccessResult =
@@ -24,6 +27,18 @@ export function evaluatePackAccess(
   pack: CompanionPackManifest,
   user: { age: number; guardianApproved: boolean },
 ): PackAccessResult {
+  if (
+    !Number.isFinite(user.age) ||
+    !Number.isInteger(user.age) ||
+    user.age < 0 ||
+    user.age > 130
+  ) {
+    return {
+      allowed: false,
+      reason: "A valid age is required.",
+    };
+  }
+
   if (user.age < 14 && !user.guardianApproved) {
     return {
       allowed: false,
@@ -38,6 +53,13 @@ export function evaluatePackAccess(
     return {
       allowed: false,
       reason: "This Companion is restricted to adults.",
+    };
+  }
+
+  if (user.age < pack.minimumAge) {
+    return {
+      allowed: false,
+      reason: `This Companion requires users to be at least ${pack.minimumAge}.`,
     };
   }
 
