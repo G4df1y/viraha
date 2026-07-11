@@ -2,6 +2,7 @@ node_modules/
 .pnpm-store/
 .bin/
 .superpowers/
+.worktrees/
 .brainstorm-server.err
 .brainstorm-server.out
 dist/
