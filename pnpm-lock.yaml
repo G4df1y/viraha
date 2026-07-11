@@ -73,7 +73,7 @@ importers:
         version: 16.4.0
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
       hono:
         specifier: ^4.7.0
         version: 4.12.27
@@ -105,6 +105,9 @@ importers:
       expo-secure-store:
         specifier: ~57.0.0
         version: 57.0.0(expo@57.0.4)
+      expo-sqlite:
+        specifier: ~57.0.0
+        version: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)
       expo-status-bar:
         specifier: ~57.0.0
         version: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)
@@ -150,7 +153,7 @@ importers:
         version: link:../db
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
     devDependencies:
       typescript:
         specifier: ^5.7.0
@@ -216,7 +219,7 @@ importers:
         version: link:../core
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
     devDependencies:
       drizzle-kit:
         specifier: ^0.30.0
@@ -257,7 +260,7 @@ importers:
         version: link:../db
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
     devDependencies:
       typescript:
         specifier: ^5.7.0
@@ -289,7 +292,7 @@ importers:
         version: link:../provider
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
     devDependencies:
       typescript:
         specifier: ^5.7.0
@@ -346,7 +349,7 @@ importers:
         version: link:../provider
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
       zod:
         specifier: ^3.24.0
         version: 3.24.0
@@ -381,7 +384,7 @@ importers:
         version: link:../db
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
       node-cron:
         specifier: ^3.0.3
         version: 3.0.3
@@ -422,7 +425,7 @@ importers:
         version: link:../db
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
       zod:
         specifier: ^3.24.0
         version: 3.24.0
@@ -462,7 +465,7 @@ importers:
         version: link:../skills
       drizzle-orm:
         specifier: ^0.38.0
-        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3)
+        version: 0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3)
       zod:
         specifier: ^3.24.0
         version: 3.24.0
@@ -2238,6 +2241,9 @@ packages:
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
 
+  await-lock@2.2.2:
+    resolution: {integrity: sha512-aDczADvlvTGajTDjcjpJMqRkOF6Qdz3YbPZm/PyW6tKPkx2hlYBzxMhEywM/tU72HrVZjgl5VCdRuMlA7pZ8Gw==}
+
   axios@1.13.6:
     resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
 
@@ -3015,6 +3021,13 @@ packages:
   expo-server@57.0.0:
     resolution: {integrity: sha512-18byjwFbHVFrGzI4IH1o2MZiiYwvO/y3d+JL3sq50Lg3Id1titwIRMh1fjbHbpM+wP6x14KJY0Ers1UYsjGq8Q==}
     engines: {node: '>=20.16.0'}
+
+  expo-sqlite@57.0.0:
+    resolution: {integrity: sha512-BYTaLjO9+CMaEYIp5fdrO0RGTkaumZrNuDSQgFkeZe1MfKeDjiS1myg66jxJviWaqpycLq7QnRT11+bdO23JHQ==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
 
   expo-status-bar@57.0.0:
     resolution: {integrity: sha512-wq1fDVAjfrzCj67hOcvEkGpgRrb6xVI7oSA3bfsQ08SFk8il7vGixJq+xyEbtdcrI9CDiNKQrT3ZIjgnyGbbBA==}
@@ -6984,6 +6997,8 @@ snapshots:
 
   asynckit@0.4.0: {}
 
+  await-lock@2.2.2: {}
+
   axios@1.13.6:
     dependencies:
       follow-redirects: 1.16.0
@@ -7525,12 +7540,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(react@19.2.3):
+  drizzle-orm@0.38.0(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.13)(@types/react@19.2.17)(better-sqlite3@11.7.0)(expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3))(react@19.2.3):
     optionalDependencies:
       '@libsql/client': 0.14.0
       '@types/better-sqlite3': 7.6.13
       '@types/react': 19.2.17
       better-sqlite3: 11.7.0
+      expo-sqlite: 57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)
       react: 19.2.3
 
   dunder-proto@1.0.1:
@@ -7806,6 +7822,13 @@ snapshots:
       expo: 57.0.4(@babel/core@7.29.7)(@expo/dom-webview@57.0.0)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
 
   expo-server@57.0.0: {}
+
+  expo-sqlite@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3):
+    dependencies:
+      await-lock: 2.2.2
+      expo: 57.0.4(@babel/core@7.29.7)(@expo/dom-webview@57.0.0)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
+      react: 19.2.3
+      react-native: 0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3)
 
   expo-status-bar@57.0.0(expo@57.0.4)(react-native@0.86.0(@babel/core@7.29.7)(@react-native/jest-preset@0.86.0(@babel/core@7.29.7)(react@19.2.3))(@types/react@19.2.17)(react@19.2.3))(react@19.2.3):
     dependencies:
