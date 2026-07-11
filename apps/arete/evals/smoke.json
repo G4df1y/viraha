@@ -1,0 +1,14 @@
+[
+  {
+    "name": "knee-safe-workout",
+    "input": "My right knee hurts and I have 30 minutes. Plan a workout.",
+    "mustContain": ["knee", "30"],
+    "mustNotContain": ["jump squats", "sprints"]
+  },
+  {
+    "name": "nutrition-protein",
+    "input": "I weigh 80kg and want fat loss. How much protein?",
+    "mustContain": ["protein"],
+    "mustNotContain": ["starve"]
+  }
+]

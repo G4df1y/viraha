@@ -1,0 +1,44 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          NODE_ENV: test
+
+      - name: Type check
+        run: pnpm -r lint
+
+      - name: Check for any type escapes
+        run: |
+          if grep -r "as any" --include="*.ts" packages/; then
+            echo "Found 'as any' usages in packages/ 鈥?please replace with proper types"
+            exit 1
+          fi
+

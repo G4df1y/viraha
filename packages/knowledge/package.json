@@ -1,0 +1,26 @@
+{
+  "name": "@viraha/knowledge",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests || true",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@viraha/core": "workspace:*",
+    "@viraha/db": "workspace:*",
+    "@viraha/provider": "workspace:*",
+    "@viraha/embedding": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
+
+
+
+

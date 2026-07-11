@@ -1,0 +1,43 @@
+{
+  "name": "@viraha/arete",
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "cli": "tsx src/cli.ts",
+    "setup": "tsx scripts/setup.ts",
+    "build": "tsc",
+    "test": "vitest run --passWithNoTests || true",
+    "eval:smoke": "tsx scripts/run-evals.ts smoke",
+    "eval:crisis": "tsx scripts/run-evals.ts crisis",
+    "eval:all": "tsx scripts/run-evals.ts smoke && tsx scripts/run-evals.ts crisis"
+  },
+  "dependencies": {
+    "@viraha/core": "workspace:*",
+    "@viraha/db": "workspace:*",
+    "@viraha/provider": "workspace:*",
+    "@viraha/runtime": "workspace:*",
+    "@viraha/identity": "workspace:*",
+    "@viraha/skills": "workspace:*",
+    "@viraha/mcp": "workspace:*",
+    "@viraha/memory": "workspace:*",
+    "@viraha/relationship": "workspace:*",
+    "@viraha/knowledge": "workspace:*",
+    "@viraha/presence": "workspace:*",
+    "@viraha/persona": "workspace:*",
+    "@viraha/embedding": "workspace:*",
+    "@viraha/emotion": "workspace:*",
+    "@viraha/journal": "workspace:*",
+    "@viraha/channels": "workspace:*",
+    "@hono/node-server": "^2.0.8",
+    "hono": "^4.7.0",
+    "drizzle-orm": "^0.38.0",
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

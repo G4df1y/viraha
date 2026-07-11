@@ -1,0 +1,13 @@
+{
+  "name": "@viraha/skills",
+  "version": "0.2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": { "build": "tsc" },
+  "dependencies": {
+    "@viraha/core": "workspace:*",
+    "@viraha/provider": "workspace:*"
+  },
+  "devDependencies": { "typescript": "^5.7.0" }
+}

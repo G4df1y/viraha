@@ -1,0 +1,18 @@
+{
+  "name": "viraha",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @viraha/arete dev",
+    "web": "pnpm dev",
+    "cli": "pnpm --filter @viraha/arete exec tsx src/cli.ts",
+    "setup": "pnpm --filter @viraha/arete exec tsx scripts/setup.ts",
+    "build": "pnpm -r build",
+    "test": "pnpm --filter @viraha/core test && pnpm --filter @viraha/provider test && pnpm --filter @viraha/runtime test && pnpm --filter @viraha/context test && pnpm --filter @viraha/channels test && pnpm --filter @viraha/arete test",
+    "test:full": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "typescript": "^5.7.2"
+  }
+}

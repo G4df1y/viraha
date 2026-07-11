@@ -1,0 +1,16 @@
+node_modules/
+.pnpm-store/
+.bin/
+.superpowers/
+.brainstorm-server.err
+.brainstorm-server.out
+dist/
+data/
+.env
+.env.local
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.log
+temp/

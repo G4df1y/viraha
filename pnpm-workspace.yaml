@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+  - "apps/*"
+allowBuilds:
+  '@types/node': set this to true or false
+  better-sqlite3: true
+  esbuild: true
+  protobufjs: true
+  sharp: true
