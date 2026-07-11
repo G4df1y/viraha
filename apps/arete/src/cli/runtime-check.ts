@@ -1,8 +1,6 @@
-export interface NodeVersionCheck {
-  ok: boolean
-  major: number
-  message?: string
-}
+export type NodeVersionCheck =
+  | { ok: true; major: number }
+  | { ok: false; major: number; message: string }
 
 export function checkNodeVersion(version = process.versions.node): NodeVersionCheck {
   const major = Number.parseInt(version.split(".")[0], 10)
