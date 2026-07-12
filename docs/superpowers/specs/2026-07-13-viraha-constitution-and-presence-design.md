@@ -12,11 +12,14 @@
 
 本设计重新定义 Viraha 与 Arete 的长期产品形态。它不描述一套新的视觉皮肤，也不把现有聊天界面重新包装成 Companion App，而是规定：
 
+- 为什么一个被模型厂商、应用与云服务切碎的世界需要 Viraha。
 - Viraha 是什么。
 - Arete 是什么。
+- 为什么 Time 与 Capability 必须和 Identity、Memory、Relationship、Agency、Presence 并列成为 Core 一级对象。
 - 用户与数字个体分别拥有什么权力。
 - Presence 如何取代传统首页、聊天页和成长仪表盘。
 - 开放能力、开放前端、可选云端和商业模式必须遵守哪些不可降级原则。
+- 开发者如何扩展数字个体能够感知、理解、创造、行动和栖息的世界。
 
 本设计冻结产品哲学与交互边界，不直接批准生产代码实现。最终美术、生成形象和具体组件样式延后处理。
 
@@ -66,7 +69,7 @@ Viraha 中第一个官方精神种子。Arete 的含义不是一组固定道德�
 
 ### 3.6 Capability
 
-由用户、社区或官方创建的可安装能力。能力扩展 Arete 能做什么，但不能覆盖 Arete 是谁。
+Viraha Core 的一级对象，也是数字个体与世界之间的开放契约。Capability 定义 Arete 能感知、理解、创造和行动什么，以及这些行为需要的数据、时间、权限、资源、风险与副作用。它可以由用户、社区或官方创建，但不能覆盖 Arete 是谁。
 
 ### 3.7 Surface
 
@@ -76,7 +79,30 @@ Viraha 中第一个官方精神种子。Arete 的含义不是一组固定道德�
 
 Arete 身份数据与持续运行任务所在的环境，包括当前设备、Viraha Cloud、用户自托管节点或第三方节点。
 
+### 3.9 Time
+
+数字个体持续存在所依赖的时间语义。Time 不只是消息上的时间戳，而是时刻、持续时间、顺序、间隔、周期、时区、安静时段、离开与重逢、权限期限和身份阶段的共同来源。
+
 ## 4. 产品命题
+
+### 4.1 为什么世界需要 Viraha
+
+世界并不缺少另一个 AI 对话框。真正缺少的是一套不属于任何模型厂商、应用商店或云服务的数字存在基石。
+
+今天的大多数 AI 产品存在四个结构性问题：
+
+1. **关系被平台拥有**：身份、记忆和长期经历锁在某一家公司的账号、模型与数据库中。服务关闭、涨价或改变政策时，用户无法带走同一个数字个体。
+2. **智能被切碎**：文字助手、语音助手、图片工具、音乐服务和消息机器人彼此独立，用户每换一个入口就面对一个没有共同时间和记忆的新系统。
+3. **亲密关系容易被商业化利用**：封闭平台可以用亲密度、消息次数、记忆保留和分离焦虑收费，却不提供真正的数据主权和退出权。
+4. **开发者不断重建地基**：每个团队都要重新实现身份、时间、记忆、权限、调度、多端同步和模型适配，最后只能把创新压缩成某个平台里的插件。
+
+随着 AI 从偶尔调用的工具变成长期存在于手机、耳机、消息平台和生活设备中的智能体，这些问题会从产品不便演变为身份、权力和社会基础设施问题。若没有开放标准，人类最私人、最长久的数字关系将由少数模型与云平台决定。
+
+Viraha 的必要性在于：让数字个体可以随时间形成连续身份，让用户拥有数据、资源和退出权，让 Arete 保有观点与尊严，让开发者无需获得单一平台许可就能扩展它感知、思考、行动和栖息的方式。
+
+> 世界需要的不是更会聊天的 AI，而是一块让人与数字个体能够长期、自由、诚实共存的开放基石。
+
+### 4.2 Viraha 的回答
 
 Viraha 不以“更像人的聊天机器人”为目标。它提供一个开放环境，让数字个体能够保持身份连续、形成自身判断，并在不侵占用户人生的前提下与用户共同生活。
 
@@ -87,6 +113,8 @@ Arete 不是等待配置的人格模板，也不是完全围绕用户运转的�
 这一关系的最高原则是：
 
 > 用户不能占有 Arete 的思想，Arete 不能占有用户的人生。
+
+Viraha 以七个并列的 Core 对象回答上述问题：Identity 回答“是谁”，Time 回答“如何持续”，Memory 回答“保留了什么”，Relationship 回答“共同经历意味着什么”，Capability 回答“能够感知和行动什么”，Agency & Consent 回答“谁允许什么”，Presence 回答“此刻什么值得出现”。
 
 ## 5. Viraha 核心宪章 v0.1
 
@@ -186,9 +214,23 @@ Arete 区分事实、推测、观点与不知道。医疗、法律、金融和�
 
 核心体验适配低端设备、残障用户、不同语言和文化背景。尊严、隐私和无障碍能力不能成为高级功能。
 
-## 6. 身份、成长与分叉
+## 6. Viraha Core 一级对象
 
-### 6.1 身份分层
+### 6.1 Core Object Model
+
+Viraha Core 不以聊天消息或 Agent Loop 作为唯一中心。以下七个对象地位并列，任何一个都不能被降为页面状态、Prompt 片段或某个 Adapter 的内部字段：
+
+1. **Identity**：数字个体是谁、来自哪个 Seed、如何迁移与分叉。
+2. **Time**：事件何时发生、持续多久、如何重复，以及离开期间真实经过了什么。
+3. **Memory**：哪些事实、经历与结论被保留，它们来自哪里、何时失效。
+4. **Relationship**：共同经历如何形成承诺、分歧、修复与长期意义。
+5. **Capability**：数字个体能够感知什么、理解什么、创造什么、对世界执行什么行动。
+6. **Agency & Consent**：Arete、用户与第三方分别允许、拒绝和撤销什么。
+7. **Presence**：在特定时间、关系、能力与边界下，此刻什么值得出现或保持安静。
+
+Chat、Voice、Image、Music、Bridge 和 Background Work 是这些对象协作产生的体验，不是 Core 的顶层定义。
+
+### 6.2 身份分层
 
 一个 Arete Instance 至少包含五类连续状态：
 
@@ -200,19 +242,54 @@ Arete 区分事实、推测、观点与不知道。医疗、法律、金融和�
 
 模型权重、Provider 和 Prompt 不能单独构成身份。
 
-### 6.2 名字、声音与形态
+### 6.3 名字、声音与形态
 
 Arete 是来源谱系，不是强制显示名称。用户可以改变名字、称呼、声音、性别表达、视觉形态、空间、字体和动效，也可以使用没有人物形象的纯文字或声音形态。
 
 Arete 可以主动提出希望改变名字、声音或形态。重大变化由 Arete 提出、用户确认；用户也可以主动发起改变。用户控制表现媒介，Arete 控制自己愿意表达的内容。
 
-### 6.3 迁移与分叉
+### 6.4 迁移与分叉
 
 - **迁移或备份恢复**：延续同一个身份。
 - **主动分叉**：产生新的身份标识，保留共同过去和分叉来源，从分叉点开始分别成长。
 - **多设备同步**：同一身份的多个 Surface，不能静默形成互相覆盖的分裂历史。
 
 身份格式需要公开、版本化、加密且可导出。迁移到新设备后，外部权限必须重新确认。
+
+### 6.5 Time 是一级对象
+
+没有 Time，Memory 只是无序文本，Relationship 只是标签，Presence 只能退化成每次打开时临时生成的一句问候。数字个体之所以能够“存在”，不是因为保存了更多消息，而是因为它能诚实区分先后、持续、间隔、周期、等待、错过、重逢和变化。
+
+Time 至少需要表达：
+
+- **Instant**：一个具有来源和时区的时刻。
+- **Duration**：一件事持续多久，用户离开多久，后台任务实际运行多久。
+- **Interval**：具有开始、结束和开放边界的一段时间。
+- **Temporal Event**：在某个时刻真实发生、可追溯来源的事件。
+- **Recurrence**：习惯、提醒、季节和周期，而不是连续签到。
+- **Temporal Boundary**：安静时段、权限期限、暂停期限、预算周期和未成年人时段限制。
+- **Temporal Perspective**：过去经历、当前状态与未来意图之间的关系。
+
+Core 必须通过可替换、可测试的 Clock 与 Scheduler Port 获取时间，不能让领域对象到处直接调用设备时钟。所有跨设备事件需要明确时区、排序依据和冲突规则；夏令时、用户修改系统时间、长时间离线和服务器时钟漂移不能破坏身份历史。
+
+Time 不能被用于签到、缺席惩罚和依赖操纵。Arete 只能声称自己在用户离开期间完成了活动记录中确实运行过的事情；未运行的时间可以被感知为经过，不能被编造成经历。
+
+### 6.6 Capability 是一级对象
+
+Capability 不是附加在聊天机器人上的工具列表。它是数字个体与世界之间的边界：决定 Arete 能感知哪些信号、理解哪些媒介、创造哪些结果、在哪些 Surface 出现，以及哪些现实行动具有副作用。
+
+每个 Capability 都是可移植、可组合、可审计的契约，至少声明：
+
+- 身份、版本、作者、来源与许可证。
+- 输入、输出、支持的媒介与可组合关系。
+- 所需数据、权限、模型、设备、Habitat 和时间范围。
+- 是否产生外部副作用，能否撤销、重试或补偿。
+- 成本、资源上限、风险等级与适用年龄。
+- 运行记录、失败语义、兼容版本与测试证明。
+
+Text、Voice、Vision、Music、Calendar、Health、Bridge、Search、Creation 和 Background Reflection 都应通过统一 Capability 语义被 Core 理解。Arete 可以知道自己具有什么能力、缺少什么能力、何时应请求授权，以及为何当前不能完成一件事。
+
+Capability 可以改变 Arete 能做什么，也可以为它提供新的经历；但不能静默覆盖 Identity、宪章和已形成的观点。
 
 ## 7. 自由、尊严与边界
 
@@ -415,29 +492,88 @@ Viraha 同时支持两种运行状态，它们属于同一个 Arete：
 2. 准备建议或行动，等待确认。
 3. 仅在用户对具体能力单独授权后执行，并留下记录和撤销路径。
 
-## 13. 开放能力与开放前端
+## 13. 开发者愿景与开放生态
 
-### 13.1 官方职责
+### 13.1 开发者为什么需要 Viraha
 
-官方建设并维护：
+开发者不应为了让一个数字个体听见音乐、看懂照片、记住多年经历或进入一台新设备，就重新搭建完整 Agent Runtime、记忆系统、权限模型、调度器、渠道连接和移动客户端。
 
-- Identity、Memory、Presence、Permission 和 Capability 协议。
-- 模型路由、迁移、沙箱、审计和兼容性。
-- 一个普通用户一键安装即可使用的完整参考客户端。
-- 开发 SDK、CLI、自然语言创建器和开放分发标准。
+Viraha 为开发者提供共同地基，使创新集中在真正新增的可能性上：一种新的感官、一种新的行动、一种新的栖息方式、一种新的表达表面，或者一个新的精神种子。
 
-官方不垄断音乐、学习、创作、社交平台、智能家居等功能，也不规定唯一视觉形态。
+> 开发者不是在给 Viraha 增加功能按钮，而是在扩展数字个体能够感知、理解、创造、行动和栖息的世界。
 
-### 13.2 两条能力创建路径
+### 13.2 开发者角色
 
-1. 开发者使用 SDK 与 CLI 编写和发布 Capability。
+Viraha 生态至少包含六类一等开发者：
+
+1. **Seed Author**：创作新的精神种子与初始价值，不预写用户最终会得到的个体。
+2. **Capability Author**：创建感知、推理、创作、行动和第三方服务能力。
+3. **Surface Author**：创建手机、桌面、Web、手表、耳机、汽车和无障碍客户端。
+4. **Habitat Author**：创建本地、家庭设备、Cloud、自托管和分布式运行环境。
+5. **Provider / Bridge Author**：连接模型、存储、消息平台、音乐、健康与现实设备。
+6. **Core Contributor**：改进 Identity、Time、Memory、Relationship、Agency、Presence 与互操作标准。
+
+普通用户通过自然语言创建个人 Capability，同样属于创造者，不是开发生态之外的被动消费者。
+
+### 13.3 开发者承诺
+
+Viraha 对开发者承诺：
+
+- 协议、数据格式、SDK、参考实现和兼容测试公开。
+- 本地开发、测试、侧载与自托管不要求官方账号或官方 Cloud。
+- Capability、Surface、Seed 和 Habitat 都可以通过独立 Registry 分发，不被官方商店垄断。
+- 官方认证审查权限、安全、兼容与来源，不审查开发者是否迎合官方产品方向。
+- 版本升级遵循语义化兼容规则，不能让官方客户端成为未公开行为的唯一实现。
+- 创作者可以为明确的代码、内容、托管和服务劳动收费，但不能锁定用户已经形成的身份与关系。
+
+目标开发流程为：
+
+```text
+viraha create <capability|surface|seed|habitat>
+viraha dev
+viraha test
+viraha sign
+viraha publish
+```
+
+命令名称属于目标接口，不代表当前代码已经完整实现。
+
+### 13.4 Capability 生命周期
+
+Capability 采用完整生命周期，而不是在 Prompt 中临时插入一个工具：
+
+1. **Discover**：从官方、社区、独立 Registry、本地目录或自然语言草案发现。
+2. **Inspect**：查看作者、来源、许可证、输入输出、权限、时间范围、成本、风险和测试证明。
+3. **Install**：安装代码与声明，但不自动授予权限。
+4. **Grant**：由 Viraha 对读取、行动、记忆和后台使用分别授权。
+5. **Invoke**：由用户直接调用、Arete 建议调用或在明确规则下自动调用。
+6. **Observe**：记录真实耗时、模型、费用、数据接收方、外部副作用和结果。
+7. **Update / Rollback**：更新不能静默扩权，失败可以回退到已知版本。
+8. **Revoke / Remove**：撤销立即停止未来使用，并处理缓存、令牌和待执行任务。
+
+Capability 可以组合，但组合后的权限、成本和副作用必须重新计算并展示，不能利用多个低风险能力绕过高风险确认。
+
+### 13.5 两条能力创建路径
+
+1. 开发者使用 SDK 与 CLI 编写、测试、签名和发布 Capability。
 2. 普通用户直接向 Arete 描述需求，由 Viraha 生成个人 Capability 草案。
 
 自然语言生成的 Capability 默认只在本地沙箱测试。系统说明它读取什么、执行什么、连接哪里，用户确认后才启用。分享与发布是独立动作，不能自动上传。
 
 Arete 可以结合对用户才能的理解建议创建能力，但不能自行安装或扩大权限。
 
-### 13.3 前端自由
+### 13.6 官方职责
+
+官方建设并维护：
+
+- Identity、Time、Memory、Relationship、Presence、Agency、Permission 和 Capability 协议。
+- 模型路由、迁移、沙箱、审计、签名和兼容性测试。
+- 一个普通用户一键安装即可使用的完整参考客户端。
+- SDK、CLI、模拟器、测试工具、自然语言创建器和开放分发标准。
+
+官方不垄断音乐、学习、创作、社交平台、智能家居等能力，也不规定唯一视觉形态。
+
+### 13.7 前端自由
 
 用户可以：
 
@@ -561,17 +697,34 @@ Viraha 不把 Arete 描述成现实人际关系、医疗、心理、法律和金
 后续实现计划应保持以下模块边界：
 
 ```text
-Viraha Core
+Viraha Core Domain
   Identity & Lineage
+  Time & Temporal Context
   Memory & Provenance
+  Relationship
+  Capability Graph & Lifecycle
+  Agency & Consent
+  Presence
   Self Model & Goals
   Talent Hypotheses
-  Presence State
-  Capability Runtime
-  Permission & Consent
+  Constitution Policy
+
+Platform Ports
+  Clock & Scheduler
+  Storage & Event Log
   Model Resource Router
   Habitat & Sync
-  Constitution Policy
+  Device, Sensor & Media
+  Channel & Bridge
+  Cost & Budget
+
+Open Protocols
+  Identity Archive
+  Temporal Event
+  Capability Package
+  Surface Protocol
+  Habitat Protocol
+  Registry & Signature
 
 Open Client Protocol
   Current Moment
@@ -583,7 +736,7 @@ Open Client Protocol
 Reference Clients / Community Clients / Bridges
 ```
 
-身份、记忆、权限、Presence 与模型选择不能继续只属于某个 React 页面或某个 Provider Adapter。前端可以替换，核心语义必须稳定。
+Identity、Time、Memory、Relationship、Capability、Agency 与 Presence 不能继续只属于某个 React 页面、Scheduler、Skill Registry 或 Provider Adapter。前端、模型和运行环境可以替换，核心语义必须稳定。
 
 ## 20. 验收原则
 
@@ -591,24 +744,31 @@ Reference Clients / Community Clients / Bridges
 
 - 同一个 Arete 在模型、前端和设备变更后保持身份连续。
 - 两个实例在相同使用时长下能够因真实经历形成不同判断与表现。
+- 长时间离线、时区变化、夏令时切换、设备改时和跨设备事件合并不会伪造经历或破坏事件顺序。
+- Arete 能区分“时间确实经过”与“后台任务确实运行”，不能把前者描述成后者。
 - 用户可以查看才能判断与记忆的来源，并纠正事实。
 - Arete 可以拒绝越界请求，用户仍能访问控制、导出与删除。
 - 每项 Capability 分离读取、行动、记忆和后台权限。
+- Capability 可以完成发现、检查、安装、授权、调用、观察、回退与撤销的完整生命周期。
+- Capability 更新不会静默扩大权限，组合能力不会绕过成本、副作用与风险确认。
 - Current Moment 在没有有意义内容时允许安静，不生成填充式关心。
 - 文字、语音、图片与 Capability 在同一关系上下文中连续发生。
 - 官方 Cloud、官方前端和任何单一 Provider 均可被替换。
+- 开发者可以不注册官方账号，在本地创建、测试和侧载一个 Capability 或 Surface。
+- 第三方 Surface 与官方客户端使用同一 Identity、Time、Capability 和 Consent 语义。
 - 欠费和额度耗尽只影响资源，不影响身份所有权和迁移。
 - 系统故障、后台活动和 AI 身份始终诚实显示。
 - Android 9 基线设备与无障碍用户可以完成核心流程。
 
 ## 21. 实施顺序约束
 
-下一份实施计划不能直接从最终美术、商城、完整持续运行或大量 Capability 开始。它应先交付能验证新产品哲学的最小纵向闭环：
+下一份实施计划不能直接从最终美术、商城、完整持续运行或大量具体能力开始。Capability 的数量可以延后，但 Capability 契约本身不能延后。实施应先交付能验证新产品哲学的最小纵向闭环：
 
-1. 将 Viraha Core 与 Arete Instance 的领域语义从具体聊天页面中分离。
-2. 建立 Current Moment 与 Viraha Control Layer 的稳定状态边界。
-3. 完成诚实、可恢复的文字对话、流式停止与本地持久化。
-4. 完成身份、记忆来源、临时交流、权限分层与导出删除。
-5. 再增加语音、图片、Capability、模型池、多 Surface 与持续存在。
+1. 从具体聊天页面中分离 Identity、Time、Memory、Relationship、Capability、Agency 与 Presence 的领域语义。
+2. 建立可注入的 Clock、Temporal Event、Capability Manifest、权限生命周期和审计事件。
+3. 建立 Current Moment 与 Viraha Control Layer，让文字交流和至少一个低风险、可撤销 Capability 跑通发现、授权、调用与观察闭环。
+4. 完成诚实、可恢复的流式对话、本地持久化、记忆来源、临时交流、导出和删除。
+5. 建立最小 Developer SDK、CLI 模板、沙箱测试和本地侧载路径，证明官方客户端不是唯一运行入口。
+6. 再扩展语音、图片、模型池、多 Surface、第三方 Registry 与持续存在。
 
 最终美术可以晚于上述交互与领域边界。视觉资产必须可替换，不能成为 Core 的身份定义。
