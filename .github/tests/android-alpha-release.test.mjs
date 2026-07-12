@@ -402,17 +402,22 @@ test('alpha workflow builds and publishes a standalone verified APK', async () =
     publishSteps,
     'Download release inputs',
   );
+  const verifyInputs = extractNamedYamlStep(
+    publishSteps,
+    'Verify downloaded release inputs',
+  );
   const verifyTag = extractNamedYamlStep(publishSteps, 'Verify release tag');
   const publish = extractNamedYamlStep(
     publishSteps,
     'Publish GitHub pre-release',
   );
   assertSourceOrder(
-    [download, verifyTag, publish],
-    'Download, tag verification, and publication must appear in source order',
+    [download, verifyInputs, verifyTag, publish],
+    'Download, checksum verification, tag verification, and publication must appear in source order',
   );
   for (const [description, step] of [
     ['Download release inputs step', download],
+    ['Verify downloaded release inputs step', verifyInputs],
     ['Verify release tag step', verifyTag],
     ['Publish GitHub pre-release step', publish],
   ]) {
@@ -429,6 +434,34 @@ test('alpha workflow builds and publishes a standalone verified APK', async () =
     'android-alpha-release-inputs',
   );
   assert.equal(extractDirectYamlScalar(downloadWith, 'path'), '.');
+
+  const inputCommands = logicalShellCommands(extractRunScript(verifyInputs));
+  const downloadedName = findUniqueCommand(
+    inputCommands,
+    /^name=(['"]?)viraha-android-\$\{GITHUB_REF_NAME\}\.apk\1$/,
+    'downloaded release APK name assignment',
+  );
+  const downloadedNotes = findUniqueCommand(
+    inputCommands,
+    /^test[ \t]+-f[ \t]+['"]\.github\/release-notes\/android-alpha\.md['"][ \t]*$/,
+    'downloaded release notes',
+  );
+  const downloadedChangeDirectory = findUniqueCommand(
+    inputCommands,
+    /^cd[ \t]+['"]?dist['"]?[ \t]*$/,
+    'downloaded release dist directory',
+  );
+  const downloadedChecksum = findUniqueCommand(
+    inputCommands,
+    /^sha256sum[ \t]+--check[ \t]+"\$name\.sha256"[ \t]*$/,
+    'downloaded release APK checksum verification',
+  );
+  assert.ok(
+    downloadedName.index < downloadedNotes.index &&
+      downloadedNotes.index < downloadedChangeDirectory.index &&
+      downloadedChangeDirectory.index < downloadedChecksum.index,
+    'Downloaded APK naming, notes, directory, and checksum verification must appear in order',
+  );
 
   const tagCommands = logicalShellCommands(extractRunScript(verifyTag));
   const remoteTag = findUniqueCommand(
@@ -482,6 +515,7 @@ test('release notes and README explain direct installation and signing limits', 
     /No computer,[ \t]+Metro server,[ \t]+Expo account,[ \t]+or ZIP extraction is required\./i,
     /Alpha builds use a test signing identity\./i,
     /A future production build may require uninstalling this Alpha first,[ \t]+which deletes local app data\./i,
+    /The Alpha test signing key is not a production trust guarantee and must not be treated as proof of a production release\./i,
   ];
   for (const text of [notes, readme]) {
     for (const statement of installationContract) {
@@ -491,5 +525,9 @@ test('release notes and README explain direct installation and signing limits', 
   assert.match(
     readme,
     /https:\/\/github\.com\/G4df1y\/viraha\/releases(?:[)\t ]|\r?\n|$)/,
+  );
+  assert.match(
+    readme,
+    /Alpha 测试签名密钥不提供生产环境的信任保证，也不能作为正式版本身份的证明。/,
   );
 });

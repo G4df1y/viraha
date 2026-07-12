@@ -26,6 +26,8 @@ Requires Android 9 or newer. Download the `.apk` asset directly, allow the brows
 
 Alpha builds use a test signing identity. A future production build may require uninstalling this Alpha first, which deletes local app data. Export anything important before upgrading.
 
+The Alpha test signing key is not a production trust guarantee and must not be treated as proof of a production release.
+
 Use the matching `.sha256` file to verify the APK's SHA-256 checksum and detect an incomplete or corrupted download; this integrity check does not replace Android's signature verification. The first target device is the iQOO Neo, subject to the same Android 9 minimum.
 
 If Android blocks installation, allow unknown-app installation for the browser or file manager that opened the APK. If Android reports an update, package, or signature conflict, export important data, uninstall the existing Alpha or debug build, and retry; uninstalling deletes that build's local app data.
@@ -34,7 +36,7 @@ If Android blocks installation, allow unknown-app installation for the browser o
 
 Android Alpha 发布后，请从公开发布页 https://github.com/G4df1y/viraha/releases 直接下载 `.apk` 文件，不要下载或解压源码 ZIP。系统要求 Android 9 或更高版本；在浏览器或文件管理器的系统设置中允许安装未知应用后，打开 APK 即可安装，无需电脑、Metro 服务器或 Expo 账号。首个适配目标设备为 iQOO Neo，同样要求 Android 9 或更高版本。
 
-Alpha 使用测试签名。未来正式版可能需要先卸载 Alpha，卸载会删除本地应用数据，请提前导出重要内容。同名 `.sha256` 文件用于核对 SHA-256、发现下载不完整或损坏，但不能替代 Android 的签名验证。
+Alpha 使用测试签名。Alpha 测试签名密钥不提供生产环境的信任保证，也不能作为正式版本身份的证明。未来正式版可能需要先卸载 Alpha，卸载会删除本地应用数据，请提前导出重要内容。同名 `.sha256` 文件用于核对 SHA-256、发现下载不完整或损坏，但不能替代 Android 的签名验证。
 
 若系统阻止安装，请为打开 APK 的浏览器或文件管理器开启“安装未知应用”权限；若提示更新、软件包或签名冲突，请先导出重要数据，再卸载已有 Alpha 或调试版后重试。
 
