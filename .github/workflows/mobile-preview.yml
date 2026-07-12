@@ -66,8 +66,10 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - name: Upload developer debug APK (requires Metro)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: viraha-mobile-debug-apk
+          name: viraha-mobile-debug-apk-requires-metro
           path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 7

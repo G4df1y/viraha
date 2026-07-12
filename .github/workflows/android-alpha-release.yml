@@ -1,0 +1,135 @@
+name: Android alpha release
+
+on:
+  push:
+    tags:
+      - 'v*-alpha.*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: node --test .github/tests/android-alpha-release.test.mjs
+
+      - run: pnpm --filter @viraha/companion-core test
+
+      - run: pnpm --filter @viraha/companion-core build
+
+      - run: pnpm --filter @viraha/mobile test
+
+      - run: pnpm --filter @viraha/mobile typecheck
+
+      - name: Generate Android project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Build standalone APK
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+
+      - name: Verify and package APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="viraha-android-${GITHUB_REF_NAME}.apk"
+          source="apps/mobile/android/app/build/outputs/apk/release/app-release.apk"
+          mkdir -p dist
+          cp "$source" "dist/$name"
+          apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -x "$apksigner"
+          "$apksigner" verify --verbose "dist/$name"
+          entries="$(unzip -Z1 "dist/$name")"
+          grep -Fx 'assets/index.android.bundle' <<< "$entries"
+          cd dist
+          sha256sum "$name" > "$name.sha256"
+
+      - name: Upload release inputs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: android-alpha-release-inputs
+          path: |
+            dist/viraha-android-*.apk
+            dist/viraha-android-*.apk.sha256
+            .github/release-notes/android-alpha.md
+          if-no-files-found: error
+          include-hidden-files: true
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: android-alpha-publish-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Download release inputs
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: android-alpha-release-inputs
+          path: .
+
+      - name: Verify downloaded release inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="viraha-android-${GITHUB_REF_NAME}.apk"
+          test -f ".github/release-notes/android-alpha.md"
+          cd dist
+          sha256sum --check "$name.sha256"
+
+      - name: Verify release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag_sha="$(git ls-remote "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" "refs/tags/${GITHUB_REF_NAME}^{}" | awk '{print $1}')"
+          test -n "$tag_sha"
+          test "$tag_sha" = "$GITHUB_SHA"
+
+      - name: Publish GitHub pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            "dist/viraha-android-$GITHUB_REF_NAME.apk" \
+            "dist/viraha-android-$GITHUB_REF_NAME.apk.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --draft \
+            --prerelease \
+            --title "Viraha $GITHUB_REF_NAME" \
+            --notes-file .github/release-notes/android-alpha.md
+          gh release edit "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false

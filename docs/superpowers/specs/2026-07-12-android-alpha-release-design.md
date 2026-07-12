@@ -24,13 +24,16 @@ The first target device is the user's iQOO Neo. The app continues to require And
 ## Distribution Design
 
 1. Add a tag-triggered GitHub Actions workflow for tags matching `v*-alpha.*`.
-2. Run the existing companion-core and mobile tests plus mobile type checking.
+2. Run the existing companion-core and mobile tests plus mobile type checking in a `build` job with only `contents: read` permission.
 3. Generate the Android project with Expo prebuild.
 4. Build the Gradle `release` variant so the JavaScript bundle is embedded and Metro is not required.
-5. Verify the APK signature and confirm that the embedded application bundle exists.
+5. Verify the APK signature and require the exact `assets/index.android.bundle` archive entry using `unzip -Z1` plus `grep -Fx`.
 6. Rename the output to `viraha-android-<tag>.apk` and generate a matching `.sha256` file.
-7. Create a GitHub pre-release with both files using the workflow's scoped `GITHUB_TOKEN`.
-8. Keep the existing pull-request preview workflow for developer diagnostics, but clearly distinguish its debug artifact from the installable Alpha release.
+7. Upload the APK, checksum, and release notes as an immutable Actions artifact for an explicit job boundary.
+8. In a separate `publish` job, download and checksum the artifact, then require the remote annotated tag's peeled commit SHA to equal `GITHUB_SHA`.
+9. Serialize publication per tag without cancelling an in-progress publish job. Grant `contents: write` only to this checkout-free job and expose `${{ github.token }}` as `GH_TOKEN` only to the release commands.
+10. Create the GitHub pre-release as a draft with both assets, then make it public only after asset upload succeeds.
+11. Keep the existing pull-request preview workflow for developer diagnostics, but clearly distinguish its debug artifact from the installable Alpha release.
 
 The immediate release tag will be `v0.1.0-alpha.1`.
 
@@ -67,9 +70,12 @@ CI acceptance checks:
 - mobile type checking passes;
 - `assembleRelease` succeeds;
 - Android `apksigner verify` succeeds;
-- the APK contains an embedded JavaScript/Hermes bundle;
+- the APK contains the exact `assets/index.android.bundle` JavaScript/Hermes archive entry;
+- the read-only build job hands the APK, checksum, and release notes to the write-scoped publish job through a pinned artifact upload/download pair;
+- the downloaded APK matches the generated SHA-256 checksum;
+- the remote annotated release tag peels to the workflow's exact `GITHUB_SHA`;
 - the Release contains exactly one APK and its SHA-256 file;
-- the Release is marked pre-release and can be downloaded without GitHub Actions access.
+- the Release is marked draft and pre-release during asset upload, then made public and downloadable without GitHub Actions access.
 
 Manual acceptance check:
 
@@ -80,6 +86,9 @@ Manual acceptance check:
 ## Failure Handling
 
 - A failed test, build, signature check, or bundle check prevents Release creation.
+- The build job has no write token; only the checkout-free publish job can create a Release.
+- Same-tag publication attempts are serialized with `cancel-in-progress: false`.
+- A failed artifact, checksum, tag, or asset-upload check leaves no public Release; a successfully uploaded draft is made public only by the final edit command.
 - Release creation is tag-driven, so pull requests cannot publish public binaries.
 - If a tag build fails, fix the workflow and publish a new Alpha tag rather than silently replacing an existing binary.
 - GitHub Release assets are immutable for a given Alpha tag in normal operation; changed code receives a new tag.
