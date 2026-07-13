@@ -7,6 +7,10 @@ import type { LLMProvider, ToolDefinition, ChatMessage } from "@viraha/provider"
 import type { EventEnvelope, EventType } from "@viraha/core"
 import { EventBus } from "./event-bus.js"
 import { NodeClock } from "./node-clock.js"
+import {
+  CapabilityDeniedError,
+  type CapabilityRuntime,
+} from "./capability-runtime.js"
 import type { PluginRegistry } from "./plugins.js"
 import { allowAllToolPolicy, type ToolPolicy } from "./tool-policy.js"
 import { BoundaryScanner, hardBoundaryReply, softBoundaryReminder, type SafetyFlag } from "./boundary-scanner.js"
@@ -54,6 +58,7 @@ export interface AgentConfig {
   companion?: AgentCompanion
   emotion?: AgentEmotion
   events?: EventBus
+  capabilities?: CapabilityRuntime
   plugins?: PluginRegistry
   toolPolicy?: ToolPolicy
   clock?: Clock
@@ -382,6 +387,10 @@ export class AgentPipeline {
       })
     }
 
+    for (const tool of this.config.capabilities?.toolDefinitions() ?? []) {
+      addTool(tool)
+    }
+
     for (const tool of this.config.plugins?.tools ?? []) {
       addTool(tool)
     }
@@ -404,6 +413,45 @@ export class AgentPipeline {
           reason: decision.reason ?? "denied",
         }, "high")
         return `Tool ${name} denied: ${decision.reason ?? "denied"}`
+      }
+      const capabilityId = this.config.capabilities?.capabilityIdForTool(name)
+      if (capabilityId && this.config.capabilities) {
+        await this.emitEvent("CapabilityInvoked", userId, correlationId, {
+          capabilityId,
+          toolName: name,
+          surfaceId: input.channel ?? "web",
+        })
+        try {
+          const result = await this.config.capabilities.invoke({
+            capabilityId,
+            userId,
+            surfaceId: input.channel ?? "web",
+            correlationId,
+            input: args,
+          })
+          await this.emitEvent("CapabilityCompleted", userId, correlationId, {
+            capabilityId,
+            toolName: name,
+            sideEffects: result.sideEffects ?? [],
+          })
+          return result.content
+        } catch (error) {
+          if (error instanceof CapabilityDeniedError) {
+            await this.emitEvent("CapabilityDenied", userId, correlationId, {
+              capabilityId,
+              toolName: name,
+              missingPermissionIds: error.missingPermissionIds,
+              reason: error.message,
+            }, "high")
+            return `Capability ${capabilityId} denied: ${error.message}`
+          }
+          await this.emitEvent("CapabilityFailed", userId, correlationId, {
+            capabilityId,
+            toolName: name,
+            error: error instanceof Error ? error.message : String(error),
+          }, "high")
+          throw error
+        }
       }
       if (name === "calculator") {
         const expr = String(args.expression ?? "")
