@@ -1,4 +1,3 @@
-import * as SQLite from 'expo-sqlite';
 import type { SQLiteBindParams, SQLiteRunResult } from 'expo-sqlite';
 
 export interface SqlDatabase {
@@ -8,6 +7,7 @@ export interface SqlDatabase {
   getAllAsync<T>(source: string, params: SQLiteBindParams): Promise<T[]>;
 }
 
-export function openMobileDatabase(): Promise<SqlDatabase> {
+export async function openMobileDatabase(): Promise<SqlDatabase> {
+  const SQLite = await import('expo-sqlite');
   return SQLite.openDatabaseAsync('viraha.db');
 }
