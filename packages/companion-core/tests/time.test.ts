@@ -22,6 +22,24 @@ describe("time", () => {
     );
   });
 
+  it.each(["July 13, 2026", "2026-07-13"])(
+    "rejects a non-ISO date-time: %s",
+    (input) => {
+      expect(() => createInstant(input, "device")).toThrow(
+        "Instant must be a valid ISO-8601 date-time",
+      );
+    },
+  );
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects a non-finite numeric instant: %s",
+    (input) => {
+      expect(() => createInstant(input, "device")).toThrow(
+        "Instant must be a valid ISO-8601 date-time",
+      );
+    },
+  );
+
   it("keeps monotonic time stable when wall time moves backwards", () => {
     const clock = new ManualClock("2026-07-13T00:00:00.000Z");
 
@@ -36,11 +54,38 @@ describe("time", () => {
     expect(clock.monotonicMs()).toBe(5000);
   });
 
+  it("treats a zero-length advance as a no-op", () => {
+    const clock = new ManualClock("2026-07-13T00:00:00.000Z");
+    const initialWallTime = clock.now();
+
+    clock.advance(0);
+
+    expect(clock.now()).toEqual(initialWallTime);
+    expect(clock.monotonicMs()).toBe(0);
+  });
+
+  it.each([
+    ["negative", -1],
+    ["non-finite", Number.NaN],
+    ["wall-time overflow", 8_640_000_000_000_000],
+  ])("rejects a %s clock advance without changing state", (_, milliseconds) => {
+    const clock = new ManualClock("2026-07-13T00:00:00.000Z");
+    const initialWallTime = clock.now();
+
+    expect(() => clock.advance(milliseconds)).toThrow(
+      "Clock advance must be a non-negative number",
+    );
+    expect(clock.now()).toEqual(initialWallTime);
+    expect(clock.monotonicMs()).toBe(0);
+  });
+
   it("compares instants and measures non-negative durations", () => {
     const start = createInstant("2026-07-13T00:00:00.000Z", "test");
     const end = createInstant("2026-07-13T00:00:10.000Z", "test");
 
     expect(compareInstants(start, end)).toBe(-1);
+    expect(compareInstants(start, start)).toBe(0);
+    expect(compareInstants(end, start)).toBe(1);
     expect(durationBetween(start, end)).toBe(10000);
     expect(() => durationBetween(end, start)).toThrow(
       "Duration cannot end before it starts",

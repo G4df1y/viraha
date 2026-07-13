@@ -1,9 +1,9 @@
 export type ClockSource = "device" | "server" | "test";
 
 export interface Instant {
-  iso: string;
-  epochMs: number;
-  source: ClockSource;
+  readonly iso: string;
+  readonly epochMs: number;
+  readonly source: ClockSource;
 }
 
 export interface Clock {
@@ -15,6 +15,15 @@ export function createInstant(
   input: string | number,
   source: ClockSource,
 ): Instant {
+  if (
+    typeof input === "string" &&
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      input,
+    )
+  ) {
+    throw new Error("Instant must be a valid ISO-8601 date-time");
+  }
+
   const epochMs = new Date(input).getTime();
 
   if (!Number.isFinite(epochMs)) {
@@ -67,12 +76,21 @@ export class ManualClock implements Clock {
   }
 
   advance(milliseconds: number): void {
-    if (!Number.isFinite(milliseconds) || milliseconds < 0) {
+    const candidateWallEpochMs = this.wallEpochMs + milliseconds;
+    const candidateElapsedMs = this.elapsedMs + milliseconds;
+
+    if (
+      !Number.isFinite(milliseconds) ||
+      milliseconds < 0 ||
+      !Number.isFinite(candidateWallEpochMs) ||
+      !Number.isFinite(candidateElapsedMs) ||
+      !Number.isFinite(new Date(candidateWallEpochMs).getTime())
+    ) {
       throw new Error("Clock advance must be a non-negative number");
     }
 
-    this.wallEpochMs += milliseconds;
-    this.elapsedMs += milliseconds;
+    this.wallEpochMs = candidateWallEpochMs;
+    this.elapsedMs = candidateElapsedMs;
   }
 
   setWallTime(value: string | number): void {
