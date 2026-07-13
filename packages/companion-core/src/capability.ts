@@ -35,17 +35,21 @@ export interface CapabilityManifest {
   risk: CapabilityRisk;
 }
 
-export interface CapabilityGrant {
+interface CapabilityGrantBase {
   id: string;
   capabilityId: string;
   permissionId: string;
   userId: string;
-  scope: CapabilityGrantScope;
   grantedAt: Instant;
   expiresAt?: Instant;
   revokedAt?: Instant;
-  remainingUses?: number;
 }
+
+export type CapabilityGrant = CapabilityGrantBase &
+  (
+    | { scope: "once"; remainingUses?: 0 | 1 }
+    | { scope: "always"; remainingUses?: never }
+  );
 
 export type CapabilityAccessDecision =
   | { allowed: true; grantIds: string[] }
@@ -108,6 +112,10 @@ function isGrantActive(grant: CapabilityGrant, now: Instant): boolean {
     return false;
   }
 
+  if (grant.grantedAt.epochMs > now.epochMs) {
+    return false;
+  }
+
   if (grant.expiresAt !== undefined && grant.expiresAt.epochMs <= now.epochMs) {
     return false;
   }
@@ -117,6 +125,30 @@ function isGrantActive(grant: CapabilityGrant, now: Instant): boolean {
   }
 
   return true;
+}
+
+function selectPreferredGrant(
+  grants: CapabilityGrant[],
+  permissionId: string,
+): CapabilityGrant | undefined {
+  let selected: CapabilityGrant | undefined;
+
+  for (const candidate of grants) {
+    if (candidate.permissionId !== permissionId) {
+      continue;
+    }
+
+    if (
+      selected === undefined ||
+      candidate.grantedAt.epochMs > selected.grantedAt.epochMs ||
+      (candidate.grantedAt.epochMs === selected.grantedAt.epochMs &&
+        candidate.id < selected.id)
+    ) {
+      selected = candidate;
+    }
+  }
+
+  return selected;
 }
 
 export function evaluateCapabilityAccess(
@@ -138,9 +170,7 @@ export function evaluateCapabilityAccess(
   const missingPermissionIds: string[] = [];
 
   for (const permission of requiredPermissions) {
-    const grant = activeGrants.find(
-      (candidate) => candidate.permissionId === permission.id,
-    );
+    const grant = selectPreferredGrant(activeGrants, permission.id);
 
     if (grant === undefined) {
       missingPermissionIds.push(permission.id);

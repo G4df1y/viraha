@@ -10,6 +10,7 @@ import {
 
 const grantedAt = createInstant("2026-07-13T00:00:00.000Z", "test");
 const now = createInstant("2026-07-13T01:00:00.000Z", "test");
+const future = createInstant("2026-07-13T01:00:00.001Z", "test");
 
 const manifest: CapabilityManifest = {
   schemaVersion: 1,
@@ -52,19 +53,32 @@ const manifest: CapabilityManifest = {
   risk: "low",
 };
 
+type CapabilityGrantOverrides = Omit<
+  Partial<CapabilityGrant>,
+  "scope" | "remainingUses"
+> &
+  (
+    | { scope?: "always"; remainingUses?: never }
+    | { scope: "once"; remainingUses?: 0 | 1 }
+  );
+
 function grant(
   permissionId: string,
-  overrides: Partial<CapabilityGrant> = {},
+  overrides: CapabilityGrantOverrides = {},
 ): CapabilityGrant {
-  return {
+  const base = {
     id: `grant-${permissionId}`,
     capabilityId: manifest.id,
     permissionId,
     userId: "user-1",
-    scope: "always",
     grantedAt,
-    ...overrides,
   };
+
+  if (overrides.scope === "once") {
+    return { ...base, ...overrides, scope: "once" };
+  }
+
+  return { ...base, ...overrides, scope: "always" };
 }
 
 describe("Capability contracts", () => {
@@ -122,7 +136,7 @@ describe("Capability contracts", () => {
   });
 
   it.each([
-    ["revoked", { revokedAt: grantedAt }],
+    ["revoked", { revokedAt: future }],
     ["expired at now", { expiresAt: now }],
     [
       "expired before now",
@@ -147,6 +161,121 @@ describe("Capability contracts", () => {
       missingPermissionIds: ["conversation.read"],
       reason: "Missing required Capability permissions: conversation.read",
     });
+  });
+
+  it("treats a grant starting after now as inactive", () => {
+    expect(
+      evaluateCapabilityAccess(
+        manifest,
+        [
+          grant("conversation.read", { grantedAt: future }),
+          grant("response.act"),
+          grant("memory.remember"),
+          grant("background.run"),
+        ],
+        "user-1",
+        now,
+      ),
+    ).toEqual({
+      allowed: false,
+      missingPermissionIds: ["conversation.read"],
+      reason: "Missing required Capability permissions: conversation.read",
+    });
+  });
+
+  it("allows an unconsumed one-time grant before it expires", () => {
+    expect(
+      evaluateCapabilityAccess(
+        manifest,
+        [
+          grant("conversation.read", { scope: "once", expiresAt: future }),
+          grant("response.act"),
+          grant("memory.remember"),
+          grant("background.run"),
+        ],
+        "user-1",
+        now,
+      ),
+    ).toEqual({
+      allowed: true,
+      grantIds: [
+        "grant-conversation.read",
+        "grant-response.act",
+        "grant-memory.remember",
+        "grant-background.run",
+      ],
+    });
+  });
+
+  it("selects the newest active grant regardless of input order", () => {
+    const older = grant("conversation.read", { id: "grant-older" });
+    const newer = grant("conversation.read", {
+      id: "grant-newer",
+      grantedAt: createInstant("2026-07-13T00:30:00.000Z", "test"),
+    });
+    const remainingGrants = [
+      grant("response.act"),
+      grant("memory.remember"),
+      grant("background.run"),
+    ];
+
+    for (const conversationGrants of [
+      [older, newer],
+      [newer, older],
+    ]) {
+      expect(
+        evaluateCapabilityAccess(
+          manifest,
+          [...conversationGrants, ...remainingGrants],
+          "user-1",
+          now,
+        ),
+      ).toEqual({
+        allowed: true,
+        grantIds: [
+          "grant-newer",
+          "grant-response.act",
+          "grant-memory.remember",
+          "grant-background.run",
+        ],
+      });
+    }
+  });
+
+  it("breaks equal grant-time ties by lexicographically smaller id", () => {
+    const lexicographicallyLarger = grant("conversation.read", {
+      id: "grant-zulu",
+    });
+    const lexicographicallySmaller = grant("conversation.read", {
+      id: "grant-alpha",
+    });
+    const remainingGrants = [
+      grant("response.act"),
+      grant("memory.remember"),
+      grant("background.run"),
+    ];
+
+    for (const conversationGrants of [
+      [lexicographicallyLarger, lexicographicallySmaller],
+      [lexicographicallySmaller, lexicographicallyLarger],
+    ]) {
+      expect(
+        evaluateCapabilityAccess(
+          manifest,
+          [...conversationGrants, ...remainingGrants],
+          "user-1",
+          now,
+        ),
+      ).toEqual({
+        allowed: true,
+        grantIds: [
+          "grant-alpha",
+          "grant-response.act",
+          "grant-memory.remember",
+          "grant-background.run",
+        ],
+      });
+    }
   });
 
   it("allows active grants and returns their ids in manifest order", () => {
