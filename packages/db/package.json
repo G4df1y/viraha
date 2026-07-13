@@ -8,7 +8,7 @@
     "build": "tsc",
     "generate": "drizzle-kit generate --dialect sqlite --schema src/schema.ts --out migrations",
     "migrate": "tsx src/migrate.ts",
-    "test": "vitest run --passWithNoTests || true",
+    "test": "vitest run --passWithNoTests",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

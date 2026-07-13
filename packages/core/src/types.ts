@@ -280,6 +280,10 @@ export type EventType =
   | "SafetyBoundaryTriggered"
   | "ChannelMessageSent"
   | "ChannelSendFailed"
+  | "CapabilityInvoked"
+  | "CapabilityCompleted"
+  | "CapabilityDenied"
+  | "CapabilityFailed"
 
 export interface EventEnvelope {
   id: string

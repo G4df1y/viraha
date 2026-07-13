@@ -1,0 +1,75 @@
+name: Mobile preview
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/mobile-preview.yml
+      - apps/mobile/**
+      - packages/companion-core/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .npmrc
+      - tsconfig.base.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-debug-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.7.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Test companion core
+        run: pnpm --filter @viraha/companion-core test
+
+      - name: Build companion core
+        run: pnpm --filter @viraha/companion-core build
+
+      - name: Test mobile app
+        run: pnpm --filter @viraha/mobile test
+
+      - name: Typecheck mobile app
+        run: pnpm --filter @viraha/mobile typecheck
+
+      - name: Export mobile app
+        run: pnpm --filter @viraha/mobile export:android
+
+      - name: Generate Android project
+        working-directory: apps/mobile
+        run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Build debug APK
+        working-directory: apps/mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload developer debug APK (requires Metro)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: viraha-mobile-debug-apk-requires-metro
+          path: apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7

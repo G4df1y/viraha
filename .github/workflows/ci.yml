@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -6,20 +6,28 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
-          version: 11
+          version: 11.7.0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 24
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -27,18 +35,38 @@ jobs:
       - name: Build all packages
         run: pnpm build
 
+      - name: Test companion core
+        run: pnpm --filter @viraha/companion-core test
+
+      - name: Test mobile app
+        run: pnpm --filter @viraha/mobile test
+
+      - name: Typecheck mobile app
+        run: pnpm --filter @viraha/mobile typecheck
+
+      - name: Export mobile app
+        run: pnpm --filter @viraha/mobile export:android
+
+      - name: Reject Node.js imports in companion core
+        shell: bash
+        run: |
+          if grep -R -n 'node:' packages/companion-core/src; then
+            echo "Found a Node.js import in packages/companion-core/src; companion core must remain React Native compatible"
+            exit 1
+          fi
+
       - name: Run tests
         run: pnpm test
         env:
           NODE_ENV: test
 
-      - name: Type check
-        run: pnpm -r lint
+      - name: Lint
+        run: pnpm lint
 
       - name: Check for any type escapes
+        shell: bash
         run: |
           if grep -r "as any" --include="*.ts" packages/; then
-            echo "Found 'as any' usages in packages/ 鈥?please replace with proper types"
+            echo "Found 'as any' usages in packages/; replace them with proper types"
             exit 1
           fi
-

@@ -1,5 +1,7 @@
-﻿import type { EventEnvelope } from "@viraha/core"
+﻿import type { Clock } from "@viraha/companion-core"
+import type { EventEnvelope } from "@viraha/core"
 import { EventStore } from "./event-store.js"
+import { NodeClock } from "./node-clock.js"
 
 type EventHandler = (event: EventEnvelope) => void | Promise<void>
 
@@ -14,6 +16,8 @@ export class EventBus {
   private store?: EventStore
   private persistFilter: Set<string> = new Set()
 
+  constructor(private readonly clock: Clock = new NodeClock()) {}
+
   useStore(store: EventStore, persistTypes?: string[]) {
     this.store = store
     if (persistTypes) persistTypes.forEach(t => this.persistFilter.add(t))
@@ -26,9 +30,10 @@ export class EventBus {
   }
 
   async emit(event: EventEnvelope) {
-    const start = Date.now()
+    const receivedAt = this.clock.now()
+    const startedAt = this.clock.monotonicMs()
     const timed = event as TimedEvent
-    timed._receivedAt = start
+    timed._receivedAt = receivedAt.epochMs
     this.history.push(timed)
 
     if (this.store && (this.persistFilter.has(event.type) || this.persistFilter.size === 0)) {
@@ -46,7 +51,7 @@ export class EventBus {
       )
     }
 
-    timed._processingMs = Date.now() - start
+    timed._processingMs = this.clock.monotonicMs() - startedAt
   }
 
   getHistory(filter?: { type?: string; userId?: string; limit?: number }): TimedEvent[] {

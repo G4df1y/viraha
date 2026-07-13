@@ -3,6 +3,7 @@ import crypto from "crypto"
 import fs from "fs"
 import os from "os"
 import path from "path"
+import { ManualClock } from "@viraha/companion-core"
 import { closeDb, initDb, migrate } from "@viraha/db"
 import { DurableScheduler } from "../src/scheduler.js"
 
@@ -24,6 +25,40 @@ describe("DurableScheduler", () => {
     for (const suffix of ["", "-wal", "-shm"]) {
       try { fs.unlinkSync(dbPath + suffix) } catch {}
     }
+  })
+
+  it("uses the injected clock for creation and due-time checks", async () => {
+    const clock = new ManualClock("2026-07-13T00:00:00.000Z")
+    const scheduler = new DurableScheduler({ clock })
+    const id = await scheduler.enqueue({
+      userId: "u-clock",
+      type: "presence",
+      runAt: "2026-07-13T00:00:05.000Z",
+    })
+
+    expect((await scheduler.getJob(id))?.createdAt).toBe("2026-07-13T00:00:00.000Z")
+    expect(await scheduler.claim(1)).toEqual([])
+
+    clock.advance(5000)
+    expect((await scheduler.claim(1))[0].id).toBe(id)
+  })
+
+  it("uses one explicit time snapshot for cooldown checks and insertion", async () => {
+    const clock = new ManualClock("2026-01-01T00:00:00.000Z")
+    const scheduler = new DurableScheduler({ clock })
+    const effectiveNow = new Date("2026-07-13T00:00:00.000Z")
+    const input = {
+      userId: "u-clock",
+      type: "presence",
+      runAt: effectiveNow,
+    }
+
+    const first = await scheduler.enqueueWithCooldown(input, 60_000, effectiveNow)
+    expect(first.deduplicated).toBe(false)
+    expect((await scheduler.getJob(first.id))?.createdAt).toBe(effectiveNow.toISOString())
+
+    const second = await scheduler.enqueueWithCooldown(input, 60_000, effectiveNow)
+    expect(second).toEqual({ id: first.id, deduplicated: true })
   })
 
   it("claims a due job once and completes it durably", async () => {

@@ -1,18 +1,26 @@
 {
   "name": "viraha",
   "private": true,
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "dev": "pnpm --filter @viraha/arete dev",
     "web": "pnpm dev",
+    "mobile": "pnpm --filter @viraha/mobile start",
+    "mobile:test": "pnpm --filter @viraha/mobile test",
+    "mobile:check": "pnpm --filter @viraha/mobile typecheck && pnpm --filter @viraha/mobile test",
+    "mobile:export": "pnpm --filter @viraha/mobile export:android",
     "cli": "pnpm --filter @viraha/arete exec tsx src/cli.ts",
     "setup": "pnpm --filter @viraha/arete exec tsx scripts/setup.ts",
     "build": "pnpm -r build",
-    "test": "pnpm --filter @viraha/core test && pnpm --filter @viraha/provider test && pnpm --filter @viraha/runtime test && pnpm --filter @viraha/context test && pnpm --filter @viraha/channels test && pnpm --filter @viraha/arete test",
-    "test:full": "pnpm -r test",
+    "test": "pnpm build && pnpm --filter @viraha/core test && pnpm --filter @viraha/provider test && pnpm --filter @viraha/runtime test && pnpm --filter @viraha/context test && pnpm --filter @viraha/channels test && pnpm --filter @viraha/arete test",
+    "test:full": "pnpm build && pnpm -r test",
     "lint": "pnpm -r lint"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^22.20.1",
     "typescript": "^5.7.2"
   }
 }

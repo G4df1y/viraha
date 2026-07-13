@@ -6,12 +6,13 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "vitest run --passWithNoTests || true",
+    "test": "vitest run --passWithNoTests",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@viraha/core": "workspace:*",
     "@viraha/db": "workspace:*",
+    "@viraha/provider": "workspace:*",
     "drizzle-orm": "^0.38.0"
   },
   "devDependencies": {

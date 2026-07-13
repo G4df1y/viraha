@@ -284,8 +284,24 @@ export function createAreteWebServer(
   scheduler?: DurableScheduler,
   memory?: MemoryEngine,
   companion?: CompanionEngine,
+  emotion?: EmotionEngine,
+  journal?: JournalEngine,
 ) {
-  const app = createAreteApp(pipeline, mcp, knowledge, hub, events, eventStore, workRunner, providerHealth, scheduler, memory, companion)
+  const app = createAreteApp(
+    pipeline,
+    mcp,
+    knowledge,
+    hub,
+    events,
+    eventStore,
+    workRunner,
+    providerHealth,
+    scheduler,
+    memory,
+    companion,
+    emotion,
+    journal,
+  )
   console.log(`Arete web: http://localhost:${port}`)
   serve({ fetch: app.fetch, port: port })
 }
