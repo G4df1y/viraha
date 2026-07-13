@@ -42,7 +42,7 @@ The Capability contract is foundational in this plan; the breadth of concrete ca
 - Run pnpm under the configured Node 22 toolchain:
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm <args>"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm <args>"
 ```
 
 - Preserve unrelated untracked `docs/research/` and `output/` content.
@@ -150,7 +150,7 @@ describe("Time", () => {
 Run:
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core test -- time.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core test -- time.test.ts"
 ```
 
 Expected: FAIL because `ManualClock`, `createInstant`, `compareInstants`, and `durationBetween` are not exported.
@@ -234,8 +234,8 @@ export * from "./time.js";
 - [ ] **Step 4: Run Time tests and package build**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core test -- time.test.ts"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core test -- time.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core build"
 ```
 
 Expected: focused tests PASS and the portable package builds without Node-only imports.
@@ -370,8 +370,8 @@ Add to `packages/runtime/package.json` dependencies:
 Run:
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm install --store-dir 'D:\viraha\.pnpm-store'"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- scheduler.test.ts event-bus.test.ts pipeline-events.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm install --store-dir D:\viraha\.pnpm-store"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- scheduler.test.ts event-bus.test.ts pipeline-events.test.ts"
 ```
 
 Expected: FAIL because Scheduler, EventBus, and AgentPipeline do not accept the Clock.
@@ -637,8 +637,8 @@ const event: EventEnvelope = {
 - [ ] **Step 6: Verify deterministic Time integration**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- scheduler.test.ts event-bus.test.ts pipeline-events.test.ts"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- scheduler.test.ts event-bus.test.ts pipeline-events.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime build"
 ```
 
 Expected: focused tests PASS and Runtime builds with no direct implicit-time reads in Scheduler, EventBus, or AgentPipeline event creation.
@@ -821,7 +821,7 @@ describe("Capability contract", () => {
 - [ ] **Step 2: Run the focused test and verify red**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core test -- capability.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core test -- capability.test.ts"
 ```
 
 Expected: FAIL because Capability contracts do not exist.
@@ -977,8 +977,8 @@ export * from "./capability.js";
 - [ ] **Step 4: Run Capability and Time tests**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core test"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core test"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core build"
 ```
 
 Expected: all companion-core tests PASS and declarations build.
@@ -1145,7 +1145,7 @@ describe("CapabilityRuntime", () => {
 - [ ] **Step 2: Run the lifecycle test and verify red**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- capability-runtime.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- capability-runtime.test.ts"
 ```
 
 Expected: FAIL because CapabilityRuntime and its stores do not exist.
@@ -1454,8 +1454,8 @@ export * from "./capability-runtime.js";
 - [ ] **Step 4: Run lifecycle tests and Runtime build**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- capability-runtime.test.ts"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- capability-runtime.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime build"
 ```
 
 Expected: lifecycle tests PASS and Runtime declarations build.
@@ -1617,7 +1617,7 @@ describe("AgentPipeline Capability integration", () => {
 - [ ] **Step 2: Run red**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- pipeline-capabilities.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- pipeline-capabilities.test.ts"
 ```
 
 Expected: FAIL because AgentPipeline does not expose or execute CapabilityRuntime tools.
@@ -1753,9 +1753,9 @@ Legacy calculator, search, plugin, and skill execution remains after this block.
 - [ ] **Step 5: Verify pipeline integration and legacy tool behavior**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/core test"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test -- pipeline-capabilities.test.ts pipeline-tools.test.ts plugins.test.ts"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/core test"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test -- pipeline-capabilities.test.ts pipeline-tools.test.ts plugins.test.ts"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime build"
 ```
 
 Expected: Capability integration PASS, existing tool/plugin tests PASS, and Runtime builds.
@@ -1818,11 +1818,11 @@ Expected: both searches return no matches. A non-zero `rg` exit code is expected
 - [ ] **Step 3: Run package gates**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node.exe' 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core test"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/companion-core build"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/core test"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime test"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm --filter @viraha/runtime build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core test"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/companion-core build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/core test"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime test"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm --filter @viraha/runtime build"
 ```
 
 Expected: all focused tests and builds PASS.
@@ -1830,9 +1830,9 @@ Expected: all focused tests and builds PASS.
 - [ ] **Step 4: Run workspace regression gates**
 
 ```powershell
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm build"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm test:full"
-D:\tools\rtk\rtk.exe proxy powershell -NoProfile -Command "$env:Path='D:\tools\node22;'+$env:Path; & 'D:\tools\node22\node_modules\corepack\dist\corepack.js' pnpm mobile:check"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm build"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm test:full"
+D:\tools\rtk\rtk.exe proxy cmd /d /s /c "set PATH=D:\tools\node22;%PATH%&&D:\tools\node22\node.exe D:\tools\node22\node_modules\corepack\dist\corepack.js pnpm mobile:check"
 ```
 
 Expected: workspace build, every package test, and existing mobile checks PASS.
