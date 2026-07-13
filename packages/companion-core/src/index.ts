@@ -1,3 +1,4 @@
+export * from "./capability.js";
 export * from "./companion.js";
 export * from "./model.js";
 export * from "./packs.js";
