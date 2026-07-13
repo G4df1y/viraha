@@ -82,16 +82,7 @@ export class DurableScheduler {
   }
 
   async enqueue(input: EnqueueJobInput): Promise<string> {
-    const id = input.id ?? `job_${crypto.randomUUID()}`
-    const now = this.clock.now().iso
-    const runAt = input.runAt instanceof Date ? input.runAt.toISOString() : input.runAt
-    await getSqliteClient().execute({
-      sql: `INSERT INTO scheduled_jobs
-        (id, user_id, type, payload, run_at, status, attempts, created_at)
-        VALUES (?, ?, ?, ?, ?, 'queued', 0, ?)`,
-      args: [id, input.userId, input.type, JSON.stringify(input.payload ?? {}), runAt, now],
-    })
-    return id
+    return this.enqueueAt(input, this.clock.now().iso)
   }
 
   /**
@@ -105,6 +96,7 @@ export class DurableScheduler {
     now?: Date,
   ): Promise<EnqueueWithCooldownResult> {
     const effectiveNow = now ?? this.currentDate()
+    const effectiveNowIso = effectiveNow.toISOString()
     const since = new Date(effectiveNow.getTime() - cooldownMs).toISOString()
     const existing = await getSqliteClient().execute({
       sql: `SELECT id FROM scheduled_jobs
@@ -116,7 +108,7 @@ export class DurableScheduler {
     if (existing.rows.length > 0) {
       return { id: String(existing.rows[0].id), deduplicated: true }
     }
-    return { id: await this.enqueue(input), deduplicated: false }
+    return { id: await this.enqueueAt(input, effectiveNowIso), deduplicated: false }
   }
 
   async claim(limit = 1, now?: Date, type?: string): Promise<DurableJob[]> {
@@ -272,5 +264,17 @@ export class DurableScheduler {
 
   private currentDate(): Date {
     return new Date(this.clock.now().epochMs)
+  }
+
+  private async enqueueAt(input: EnqueueJobInput, createdAt: string): Promise<string> {
+    const id = input.id ?? `job_${crypto.randomUUID()}`
+    const runAt = input.runAt instanceof Date ? input.runAt.toISOString() : input.runAt
+    await getSqliteClient().execute({
+      sql: `INSERT INTO scheduled_jobs
+        (id, user_id, type, payload, run_at, status, attempts, created_at)
+        VALUES (?, ?, ?, ?, ?, 'queued', 0, ?)`,
+      args: [id, input.userId, input.type, JSON.stringify(input.payload ?? {}), runAt, createdAt],
+    })
+    return id
   }
 }
