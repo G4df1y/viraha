@@ -1,7 +1,10 @@
+import { randomUUID } from "node:crypto";
+
 import type { ToolDefinition } from "@viraha/provider";
 import {
   defineCapability,
   evaluateCapabilityAccess,
+  type CapabilityAccessDecision,
   type CapabilityGrant,
   type CapabilityGrantScope,
   type CapabilityManifest,
@@ -37,7 +40,11 @@ export interface CapabilityGrantStore {
     userId: string;
     revokedAt: Instant;
   }): Promise<void>;
-  consume(grantIds: string[]): Promise<void>;
+  claim(
+    manifest: CapabilityManifest,
+    userId: string,
+    now: Instant,
+  ): Promise<CapabilityAccessDecision>;
 }
 
 export interface CapabilityObservationSink {
@@ -57,14 +64,16 @@ export class InMemoryCapabilityGrantStore implements CapabilityGrantStore {
   private readonly grants = new Map<string, CapabilityGrant>();
 
   async list(userId: string, capabilityId: string): Promise<CapabilityGrant[]> {
-    return [...this.grants.values()].filter(
-      (grant) =>
-        grant.userId === userId && grant.capabilityId === capabilityId,
+    return structuredClone(
+      [...this.grants.values()].filter(
+        (grant) =>
+          grant.userId === userId && grant.capabilityId === capabilityId,
+      ),
     );
   }
 
   async save(grant: CapabilityGrant): Promise<void> {
-    this.grants.set(grant.id, grant);
+    this.grants.set(grant.id, structuredClone(grant));
   }
 
   async revoke(input: {
@@ -80,29 +89,51 @@ export class InMemoryCapabilityGrantStore implements CapabilityGrantStore {
         grant.userId === input.userId &&
         isActiveAt(grant, input.revokedAt)
       ) {
-        this.grants.set(id, { ...grant, revokedAt: input.revokedAt });
+        this.grants.set(id, {
+          ...grant,
+          revokedAt: structuredClone(input.revokedAt),
+        });
       }
     }
   }
 
-  async consume(grantIds: string[]): Promise<void> {
-    for (const id of grantIds) {
-      const grant = this.grants.get(id);
+  async claim(
+    manifest: CapabilityManifest,
+    userId: string,
+    now: Instant,
+  ): Promise<CapabilityAccessDecision> {
+    const decision = evaluateCapabilityAccess(
+      structuredClone(manifest),
+      structuredClone([...this.grants.values()]),
+      userId,
+      structuredClone(now),
+    );
 
-      if (grant?.scope === "once") {
-        this.grants.set(id, { ...grant, remainingUses: 0 });
+    if (decision.allowed) {
+      for (const id of decision.grantIds) {
+        const grant = this.grants.get(id);
+
+        if (grant?.scope === "once") {
+          this.grants.set(id, { ...grant, remainingUses: 0 });
+        }
       }
     }
+
+    return structuredClone(decision);
   }
 }
 
 export class InMemoryCapabilityObservationSink
   implements CapabilityObservationSink
 {
-  readonly items: CapabilityObservation[] = [];
+  private readonly recorded: CapabilityObservation[] = [];
+
+  get items(): readonly CapabilityObservation[] {
+    return structuredClone(this.recorded);
+  }
 
   async record(observation: CapabilityObservation): Promise<void> {
-    this.items.push(observation);
+    this.recorded.push(structuredClone(observation));
   }
 }
 
@@ -118,7 +149,7 @@ export class CapabilityDeniedError extends Error {
     super(reason);
     this.name = "CapabilityDeniedError";
     this.capabilityId = capabilityId;
-    this.missingPermissionIds = missingPermissionIds;
+    this.missingPermissionIds = [...missingPermissionIds];
   }
 }
 
@@ -131,18 +162,18 @@ interface InstalledCapability {
 export class CapabilityRuntime {
   private readonly installed = new Map<string, InstalledCapability>();
   private readonly capabilityIdsByToolName = new Map<string, string>();
-  private idCounter = 0;
 
   constructor(
     private readonly ports: {
       clock: Clock;
       grants: CapabilityGrantStore;
       observations: CapabilityObservationSink;
+      idGenerator?: () => string;
     },
   ) {}
 
   install(manifestInput: CapabilityManifest, handler: CapabilityHandler): void {
-    const manifest = defineCapability(manifestInput);
+    const manifest = structuredClone(defineCapability(manifestInput));
 
     if (this.installed.has(manifest.id)) {
       throw new Error(`Capability ${manifest.id} is already installed`);
@@ -159,14 +190,16 @@ export class CapabilityRuntime {
   }
 
   list(): CapabilityManifest[] {
-    return [...this.installed.values()].map(({ manifest }) => manifest);
+    return [...this.installed.values()].map(({ manifest }) =>
+      structuredClone(manifest),
+    );
   }
 
   toolDefinitions(): ToolDefinition[] {
     return [...this.installed.values()].map(({ manifest, toolName }) => ({
       name: toolName,
       description: manifest.description,
-      inputSchema: manifest.inputSchema,
+      inputSchema: structuredClone(manifest.inputSchema),
     }));
   }
 
@@ -208,7 +241,7 @@ export class CapabilityRuntime {
         : { ...base, scope: "always" };
 
     await this.ports.grants.save(grant);
-    return grant;
+    return structuredClone(grant);
   }
 
   async revoke(input: {
@@ -232,20 +265,36 @@ export class CapabilityRuntime {
     const installed = this.requireInstalled(request.capabilityId);
     const startedAt = this.ports.clock.now();
     const monotonicStart = this.ports.clock.monotonicMs();
-    const grants = await this.ports.grants.list(
-      request.userId,
-      request.capabilityId,
-    );
-    const decision = evaluateCapabilityAccess(
-      installed.manifest,
-      grants,
-      request.userId,
-      startedAt,
-    );
+    let decision: CapabilityAccessDecision;
+
+    try {
+      decision = await this.ports.grants.claim(
+        installed.manifest,
+        request.userId,
+        startedAt,
+      );
+    } catch (error) {
+      const completedAt = this.ports.clock.now();
+      await this.safeRecord({
+        id: this.nextId("capability-observation", completedAt),
+        capabilityId: request.capabilityId,
+        userId: request.userId,
+        surfaceId: request.surfaceId,
+        correlationId: request.correlationId,
+        outcome: "failed",
+        startedAt,
+        completedAt,
+        durationMs: this.ports.clock.monotonicMs() - monotonicStart,
+        grantIds: [],
+        sideEffects: [],
+        reason: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
 
     if (!decision.allowed) {
       const completedAt = this.ports.clock.now();
-      await this.ports.observations.record({
+      await this.safeRecord({
         id: this.nextId("capability-observation", completedAt),
         capabilityId: request.capabilityId,
         userId: request.userId,
@@ -266,8 +315,6 @@ export class CapabilityRuntime {
       );
     }
 
-    await this.ports.grants.consume(decision.grantIds);
-
     let result: CapabilityResult;
     try {
       result = await installed.handler(request.input, {
@@ -278,7 +325,7 @@ export class CapabilityRuntime {
       });
     } catch (error) {
       const completedAt = this.ports.clock.now();
-      await this.ports.observations.record({
+      await this.safeRecord({
         id: this.nextId("capability-observation", completedAt),
         capabilityId: request.capabilityId,
         userId: request.userId,
@@ -296,7 +343,7 @@ export class CapabilityRuntime {
     }
 
     const completedAt = this.ports.clock.now();
-    await this.ports.observations.record({
+    await this.safeRecord({
       id: this.nextId("capability-observation", completedAt),
       capabilityId: request.capabilityId,
       userId: request.userId,
@@ -306,10 +353,21 @@ export class CapabilityRuntime {
       startedAt,
       completedAt,
       durationMs: this.ports.clock.monotonicMs() - monotonicStart,
-      grantIds: decision.grantIds,
-      sideEffects: result.sideEffects ?? [],
+      grantIds: [...decision.grantIds],
+      sideEffects: [...(result.sideEffects ?? [])],
     });
     return result;
+  }
+
+  private async safeRecord(observation: CapabilityObservation): Promise<void> {
+    try {
+      await this.ports.observations.record(observation);
+    } catch (error) {
+      console.error(
+        "[CapabilityRuntime] Failed to record observation",
+        error,
+      );
+    }
   }
 
   private requireInstalled(capabilityId: string): InstalledCapability {
@@ -323,7 +381,6 @@ export class CapabilityRuntime {
   }
 
   private nextId(prefix: string, now: Instant): string {
-    this.idCounter += 1;
-    return `${prefix}-${now.epochMs}-${this.idCounter}`;
+    return `${prefix}-${now.epochMs}-${this.ports.idGenerator?.() ?? randomUUID()}`;
   }
 }
