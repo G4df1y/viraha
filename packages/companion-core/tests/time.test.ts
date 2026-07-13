@@ -31,6 +31,33 @@ describe("time", () => {
     },
   );
 
+  it.each(["2026-02-29T00:00:00Z", "2026-02-30T00:00:00Z"])(
+    "rejects an impossible calendar date: %s",
+    (input) => {
+      expect(() => createInstant(input, "device")).toThrow(
+        "Instant must be a valid ISO-8601 date-time",
+      );
+    },
+  );
+
+  it.each([
+    "2026-13-01T00:00:00Z",
+    "2026-01-01T24:00:00Z",
+    "2026-01-01T00:60:00Z",
+    "2026-01-01T00:00:60Z",
+    "2026-01-01T00:00:00+08:60",
+  ])("rejects an out-of-range date-time component: %s", (input) => {
+    expect(() => createInstant(input, "device")).toThrow(
+      "Instant must be a valid ISO-8601 date-time",
+    );
+  });
+
+  it("accepts and normalizes a real leap day", () => {
+    expect(
+      createInstant("2028-02-29T23:59:59.123+08:00", "device").iso,
+    ).toBe("2028-02-29T15:59:59.123Z");
+  });
+
   it.each([Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects a non-finite numeric instant: %s",
     (input) => {
