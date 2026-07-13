@@ -1,10 +1,12 @@
 import { IdentityEngine, type IdentityConfig } from "@viraha/identity"
+import type { Clock } from "@viraha/companion-core"
 import { evaluateMathExpression } from "@viraha/core"
 import { SkillRegistry, SkillExecutor, type SkillHandler, type SkillManifest } from "@viraha/skills"
 import { MCPManager } from "@viraha/mcp"
 import type { LLMProvider, ToolDefinition, ChatMessage } from "@viraha/provider"
 import type { EventEnvelope, EventType } from "@viraha/core"
 import { EventBus } from "./event-bus.js"
+import { NodeClock } from "./node-clock.js"
 import type { PluginRegistry } from "./plugins.js"
 import { allowAllToolPolicy, type ToolPolicy } from "./tool-policy.js"
 import { BoundaryScanner, hardBoundaryReply, softBoundaryReminder, type SafetyFlag } from "./boundary-scanner.js"
@@ -54,6 +56,7 @@ export interface AgentConfig {
   events?: EventBus
   plugins?: PluginRegistry
   toolPolicy?: ToolPolicy
+  clock?: Clock
 }
 
 export interface AgentInput {
@@ -86,10 +89,12 @@ export class AgentPipeline {
   private mcp: MCPManager
   private config: AgentConfig
   private boundaryScanner: BoundaryScanner
+  private readonly clock: Clock
   private static eventCounter = 0
 
   constructor(config: AgentConfig) {
     this.config = config
+    this.clock = config.clock ?? new NodeClock()
     this.identity = new IdentityEngine()
     this.skills = new SkillRegistry()
     this.skillExecutor = new SkillExecutor(this.skills)
@@ -474,11 +479,13 @@ export class AgentPipeline {
   ): Promise<void> {
     if (!this.config.events) return
 
+    const now = this.clock.now()
+
     const event: EventEnvelope = {
-      id: `evt_${Date.now()}_${++AgentPipeline.eventCounter}`,
+      id: `evt_${now.epochMs}_${++AgentPipeline.eventCounter}`,
       type,
       source: "agent-pipeline",
-      timestamp: new Date().toISOString(),
+      timestamp: now.iso,
       correlationId,
       payload,
       metadata: { userId, priority },

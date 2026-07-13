@@ -1,8 +1,25 @@
 import { describe, it, expect } from "vitest"
+import { ManualClock } from "@viraha/companion-core"
 import { EventBus } from "../src/event-bus.js"
 import { TurnQueue } from "../src/queue.js"
 
 describe("EventBus", () => {
+  it("measures processing duration with monotonic time", async () => {
+    const clock = new ManualClock("2026-07-13T00:00:00.000Z")
+    const bus = new EventBus(clock)
+    bus.on("UserMessageReceived", () => {
+      clock.advance(25)
+      clock.setWallTime("2026-07-12T23:00:00.000Z")
+    })
+
+    await bus.emit({
+      id: "1", type: "UserMessageReceived", source: "test", timestamp: clock.now().iso,
+      correlationId: "c1", payload: {}, metadata: { priority: "normal" },
+    })
+
+    expect(bus.getMetrics().recent[0]?.ms).toBe(25)
+  })
+
   it("emits and receives events", async () => {
     const bus = new EventBus()
     let received = ""

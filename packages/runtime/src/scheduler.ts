@@ -1,5 +1,7 @@
 import crypto from "crypto"
+import type { Clock } from "@viraha/companion-core"
 import { getSqliteClient } from "@viraha/db"
+import { NodeClock } from "./node-clock.js"
 
 export type DurableJobStatus = "queued" | "running" | "completed" | "failed"
 
@@ -31,6 +33,7 @@ export interface SchedulerRunResult {
 }
 
 export interface DurableSchedulerOptions {
+  clock?: Clock
   /** How long a claimed job may run before another worker may reclaim it. */
   leaseMs?: number
   /** Max run attempts before a job is permanently marked failed. */
@@ -68,8 +71,10 @@ export class DurableScheduler {
   private readonly maxAttempts: number
   private readonly backoffBaseMs: number
   private readonly backoffMaxMs: number
+  private readonly clock: Clock
 
   constructor(options: DurableSchedulerOptions = {}) {
+    this.clock = options.clock ?? new NodeClock()
     this.leaseMs = options.leaseMs ?? 60_000
     this.maxAttempts = options.maxAttempts ?? 5
     this.backoffBaseMs = options.backoffBaseMs ?? 30_000
@@ -78,7 +83,7 @@ export class DurableScheduler {
 
   async enqueue(input: EnqueueJobInput): Promise<string> {
     const id = input.id ?? `job_${crypto.randomUUID()}`
-    const now = new Date().toISOString()
+    const now = this.clock.now().iso
     const runAt = input.runAt instanceof Date ? input.runAt.toISOString() : input.runAt
     await getSqliteClient().execute({
       sql: `INSERT INTO scheduled_jobs
@@ -97,9 +102,10 @@ export class DurableScheduler {
   async enqueueWithCooldown(
     input: EnqueueJobInput,
     cooldownMs: number,
-    now: Date = new Date(),
+    now?: Date,
   ): Promise<EnqueueWithCooldownResult> {
-    const since = new Date(now.getTime() - cooldownMs).toISOString()
+    const effectiveNow = now ?? this.currentDate()
+    const since = new Date(effectiveNow.getTime() - cooldownMs).toISOString()
     const existing = await getSqliteClient().execute({
       sql: `SELECT id FROM scheduled_jobs
         WHERE user_id = ? AND type = ? AND status != 'failed' AND created_at >= ?
@@ -113,9 +119,11 @@ export class DurableScheduler {
     return { id: await this.enqueue(input), deduplicated: false }
   }
 
-  async claim(limit = 1, now = new Date(), type?: string): Promise<DurableJob[]> {
+  async claim(limit = 1, now?: Date, type?: string): Promise<DurableJob[]> {
     const client = getSqliteClient()
-    const staleBefore = new Date(now.getTime() - this.leaseMs).toISOString()
+    const effectiveNow = now ?? this.currentDate()
+    const effectiveNowIso = effectiveNow.toISOString()
+    const staleBefore = new Date(effectiveNow.getTime() - this.leaseMs).toISOString()
     await client.execute({
       sql: `UPDATE scheduled_jobs
         SET status = 'queued', locked_at = NULL
@@ -125,7 +133,6 @@ export class DurableScheduler {
 
     const claimed: DurableJob[] = []
     for (let i = 0; i < limit; i++) {
-      const lockedAt = now.toISOString()
       const result = await client.execute({
         sql: `UPDATE scheduled_jobs
           SET status = 'running', attempts = attempts + 1, locked_at = ?
@@ -138,7 +145,7 @@ export class DurableScheduler {
           )
           RETURNING id, user_id, type, payload, run_at, status, attempts,
                     last_error, locked_at, completed_at, created_at`,
-        args: [lockedAt, now.toISOString(), type ?? null, type ?? null],
+        args: [effectiveNowIso, effectiveNowIso, type ?? null, type ?? null],
       })
       if (result.rows.length === 0) break
       claimed.push(this.parseRow(result.rows[0]))
@@ -146,12 +153,13 @@ export class DurableScheduler {
     return claimed
   }
 
-  async complete(id: string, completedAt = new Date()): Promise<void> {
+  async complete(id: string, completedAt?: Date): Promise<void> {
+    const effectiveCompletedAt = completedAt ?? this.currentDate()
     await getSqliteClient().execute({
       sql: `UPDATE scheduled_jobs
         SET status = 'completed', completed_at = ?, locked_at = NULL
         WHERE id = ?`,
-      args: [completedAt.toISOString(), id],
+      args: [effectiveCompletedAt.toISOString(), id],
     })
   }
 
@@ -179,17 +187,18 @@ export class DurableScheduler {
   async runDue(
     handler: (job: DurableJob) => Promise<void>,
     limit = 10,
-    now = new Date(),
+    now?: Date,
     type?: string,
   ): Promise<SchedulerRunResult> {
-    const jobs = await this.claim(limit, now, type)
+    const effectiveNow = now ?? this.currentDate()
+    const jobs = await this.claim(limit, effectiveNow, type)
     let completed = 0
     let failed = 0
 
     for (const job of jobs) {
       try {
         await handler(job)
-        await this.complete(job.id, now)
+        await this.complete(job.id, effectiveNow)
         completed++
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
@@ -198,7 +207,7 @@ export class DurableScheduler {
             this.backoffBaseMs * 2 ** (job.attempts - 1),
             this.backoffMaxMs,
           )
-          await this.fail(job.id, msg, new Date(now.getTime() + backoff))
+          await this.fail(job.id, msg, new Date(effectiveNow.getTime() + backoff))
         } else {
           await this.fail(job.id, msg)
         }
@@ -259,5 +268,9 @@ export class DurableScheduler {
       completedAt: row.completed_at == null ? null : String(row.completed_at),
       createdAt: String(row.created_at),
     }
+  }
+
+  private currentDate(): Date {
+    return new Date(this.clock.now().epochMs)
   }
 }

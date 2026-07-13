@@ -14,5 +14,6 @@ export * from "./plugin-loader.js"
 export * from "./scheduler.js"
 export * from "./boundary-scanner.js"
 export * from "./log-redactor.js"
+export * from "./node-clock.js"
 
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { ManualClock } from "@viraha/companion-core"
 import { AgentPipeline, EventBus } from "../src/index.js"
 import type { EventEnvelope } from "@viraha/core"
 import type { IdentityConfig } from "@viraha/identity"
@@ -17,6 +18,39 @@ const identity: IdentityConfig = {
 }
 
 describe("AgentPipeline events", () => {
+  it("uses the injected clock for event ids and timestamps", async () => {
+    const clock = new ManualClock("2026-07-13T00:00:00.000Z")
+    const events = new EventBus(clock)
+    const llm: LLMProvider = {
+      name: "fake",
+      async chat() {
+        return {
+          content: "Ready.",
+          finishReason: "stop",
+          usage: { inputTokens: 1, outputTokens: 1 },
+        }
+      },
+      async *chatStream() {},
+    }
+    const pipeline = new AgentPipeline({
+      identity,
+      model: "fake-model",
+      llm,
+      events,
+      clock,
+    })
+
+    await pipeline.process({ message: "hi", userId: "web-user" })
+
+    const history = events.getHistory()
+    expect(history.map(event => event.timestamp)).toEqual([
+      "2026-07-13T00:00:00.000Z",
+      "2026-07-13T00:00:00.000Z",
+      "2026-07-13T00:00:00.000Z",
+    ])
+    expect(history.every(event => event.id.startsWith(`evt_${clock.now().epochMs}_`))).toBe(true)
+  })
+
   it("emits turn events with one correlation id", async () => {
     const events = new EventBus()
     const llm: LLMProvider = {

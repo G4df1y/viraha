@@ -10,6 +10,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@viraha/companion-core": "workspace:*",
     "@viraha/core": "workspace:*",
     "@viraha/db": "workspace:*",
     "@viraha/provider": "workspace:*",

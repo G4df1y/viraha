@@ -445,6 +445,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@viraha/companion-core':
+        specifier: workspace:*
+        version: link:../companion-core
       '@viraha/core':
         specifier: workspace:*
         version: link:../core
